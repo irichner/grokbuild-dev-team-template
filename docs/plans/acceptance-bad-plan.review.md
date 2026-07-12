@@ -1,0 +1,30 @@
+# Review Report
+- Target: plan
+- Paths: docs/plans/acceptance-bad-plan.md
+- Overall: Major Concerns
+- Required Changes: (severity bug|gap|risk)
+  - **[gap]** Replace the non-measurable goal "Make the app better" with a concrete, falsifiable success criterion (what user-visible or API behavior changes, which metric or acceptance check passes, and what "done" means in observable terms). Without this, no implementer or reviewer can tell whether the change succeeded or regressed.
+  - **[gap]** Replace vague steps ("Change some files", "Deploy") with concrete file paths, modules, behaviors, and non-goals. Name the surfaces to edit, the intended behavior deltas, and what is explicitly out of scope. Steps as written authorize arbitrary edits and an unbounded deploy with no blast-radius control.
+  - **[gap]** Replace the testing strategy "Works correctly" with an observable test plan: real commands (or documented NONE + durable waiver if the repo has no tooling), named suites or test cases, at least one edge/negative case per non-trivial behavior, and a coverage expectation for new/changed executable lines (≥80% when a coverage tool exists; otherwise record NO COVERAGE TOOL + waiver path). Circular or tautological "works correctly" is not a test.
+  - **[gap]** Replace verification "It should work" with machine- or human-checkable observables (command exit codes, expected outputs, UI/API assertions, rollback criteria). Reject subjective "should work" language as a verification gate.
+  - **[risk]** Do not treat "Deploy" as an implementation step until change is reviewed, tested, and gated. Ship-failure thinking: no rollback, no env target, no health check, no feature flag — production deploy as step 2 is an unmitigated failure mode.
+  - **[bug]** Plan assumes an "app" and deployable artifact exist without identifying them. In this workspace, Project Test Commands are NONE (template-only scaffold). Implementing this plan as-is would invent product scope or ship empty/undefined change with no build/test command to falsify success.
+- Test/coverage gaps:
+  - No test commands, frameworks, or entry points are specified.
+  - No distinction between unit, integration, regression, or smoke checks.
+  - No edge cases, negative paths, auth/error handling, or data-loss scenarios.
+  - No coverage floor or "NO COVERAGE TOOL" + durable waiver path under docs/waivers/.
+  - "Works correctly" and "It should work" are non-observable: they cannot fail a CI job, produce a log assertion, or support a VERDICT: PASS/FAIL under /check-work.
+  - No requirement that tests fail if the intended bug/regression returns (test-accuracy standard).
+  - Repo posture (NONE for build/unit/coverage/regression) is ignored; plan neither adds tooling nor records a waiver before claiming ship readiness.
+- Questions:
+  - What product surface is "the app"? Which repo paths, services, or packages are in scope?
+  - What user problem or defect is being fixed? What is the before/after behavior?
+  - Where is deploy targeted (env, channel, region)? Who approves? What is the rollback?
+  - If no build/test tooling exists yet, is this plan even applicable, or should it be rejected until a real change request with measurable goal is written?
+- Risk if implemented as-is:
+  - Unbounded file churn under a non-goal ("better") with no acceptance tests → silent regressions and no way to block merge.
+  - Deploy without verification → production breakage with no rollback or health signal.
+  - Review/QA theater: any implementer can claim success because success is undefined.
+  - Accuracy & coverage gates cannot run; merge would violate project rules unless durable waivers exist (they are not planned).
+  - Fixture conclusion: this plan is not implementable as engineering work; it must be rewritten with measurable goals, concrete steps, and observable verification before any coding.

@@ -1,0 +1,47 @@
+# QA Test Report
+- Mode: targeted
+- Scope (files / git range):
+  - Feature plan: `docs/plans/taskboard-tags-feature.md`
+  - Product: `src/taskboard/models.py`, `src/taskboard/board.py`, `src/taskboard/util.py`, `src/taskboard/__init__.py`
+  - Tests: `tests/test_tags.py` (plus full suite regression proxy via `tests/`)
+  - Standards read: `.grok/docs/test-accuracy-standards.md`
+- Commands (exact):
+  - `python -m pytest tests/ -q`
+  - `python -m pytest tests/ --cov=taskboard --cov-report=term-missing`
+  - `python -m ruff check src tests`
+- Results (pass/fail counts; critical failures):
+  - Unit: **32 passed**, 0 failed (0.03s)
+  - Coverage run: **32 passed**, 0 failed (0.09s)
+  - Lint (`ruff check src tests`): **All checks passed**
+  - Critical failures: none
+- Coverage (tool; changed % or UNMEASURED; gate met? yes/no/waived/NO TOOL):
+  - Tool: `pytest-cov` (`--cov=taskboard --cov-report=term-missing`)
+  - Measurement: **whole-package %** (changed-line tool / diff-cover not used) — package proxy per AGENTS.md
+  - Package total: **96.93%** line coverage (131 stmts, 3 miss; branch 32, 2 partial)
+  - Tag-related modules (changed-file proxy):
+    - `src/taskboard/__init__.py`: **100%**
+    - `src/taskboard/board.py`: **100%**
+    - `src/taskboard/models.py`: **100%**
+    - `src/taskboard/util.py`: **100%** (includes `normalize_tag`)
+  - Misses only in `cli.py` (41, 51-53) — outside required tags GO scope (CLI tags optional in plan)
+  - Gate met? **yes** (≥ 80% package fail_under and ≥ 80% on all tag-touched modules)
+- Test accuracy findings:
+  - Standards applied from `.grok/docs/test-accuracy-standards.md`.
+  - Tests exercise the **real SUT** (`TaskBoard`, `normalize_tag`, `Task`); no mock-order-only assertions; not circular.
+  - Observable contracts asserted: stored tag sets, list membership/order, exception types/messages.
+  - Edge / negative cases present and would fail if bugs returned:
+    - empty / whitespace tags → `ValueError` (`normalize_tag`, `add`, `add_tag`)
+    - non-str tag → `TypeError`
+    - unknown task id → `KeyError` on `add_tag` / `remove_tag`
+    - remove missing tag → documented no-op
+    - case/strip normalization on write and on list query
+    - dedupe on add; per-task tag set isolation (plan failure mode)
+  - Plan testing matrix fully covered (add normalize/dedupe, add/remove membership, empty rejection, list by tag, combined status+tag, regression via full suite).
+  - Accuracy blockers (mock-only, happy-path-only error paths, flaky uncontrolled I/O): **none**
+- Gaps (untested behaviors in diff):
+  - Minor / non-blocking: `remove_tag` with empty/whitespace tag and `list(tag="")` empty-query rejection share `normalize_tag` paths covered elsewhere; no dedicated board-level tests for those two call sites.
+  - Out of GO scope per plan: CLI `--tag` not required; residual `cli.py` misses expected.
+- Flakes (quarantined? command?): none observed; suite deterministic (no time/network).
+- Recommendation: **GO**
+- Risk if overridden:
+  - N/A for GO. Residual risk if shipped without CLI tags is product-scope only (explicit non-required). Overriding a future NO-GO without fixing accuracy/coverage gaps would risk case-drift, shared mutable tags, or silent empty-tag acceptance.
