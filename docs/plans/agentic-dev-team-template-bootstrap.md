@@ -1,38 +1,57 @@
 # Implementation Plan: GrokForge Agentic Dev Team Template Bootstrap
 
-**Status:** Draft v1  
+**Status:** Draft v2  
 **Owner:** Lead Engineer (Grok Build)  
 **Date:** 2026-07-12  
-**Source document:** `grokbuild-agentic-dev-team-template-bootstrap.md` (v1.4)  
-**Prior cold reviews of source:** `grokbuild-agentic-dev-team-template-bootstrap.review.md` (v1.3 findings; folded into v1.4)
+**Source document:** `grokbuild-agentic-dev-team-template-bootstrap.md` (v1.4) — **sole authority for file bodies**  
+**Prior reviews:**  
+- Source cold review (v1.3): `grokbuild-agentic-dev-team-template-bootstrap.review.md`  
+- Plan Draft v1 cold reviews: `docs/plans/agentic-dev-team-template-bootstrap.review-{1,2,3}.md` (findings folded here)
 
 ---
 
 ## Goal
 
-Install a complete Grok-native agentic software-development team configuration into the target repository so that Grok:
+Install the GrokForge agentic team **config scaffold** into the target repository so that:
 
-1. **Discovers** project skills and personas under real paths (`.grok/skills/*/SKILL.md`, `.grok/personas/*.toml`).
-2. **Prefers** bundled harness skills (`/review`, `/check-work`, `/implement` when invoked) rather than reinventing them.
-3. **Enforces** measurable gates: tests pass, coverage floor when a tool exists, test-accuracy standards, and no open bug/gap without a durable waiver under `docs/waivers/`.
-4. **Proves** install with **strict** `grok inspect --json` skill listing (V8) **and** mandatory Fixture A behavioral plan-review (V11) — not file-tree ceremony alone.
+1. **Discovers** — Project skills and personas exist under real Grok paths (`.grok/skills/*/SKILL.md`, `.grok/personas/*.toml`) and the five skill names appear in `grok inspect --json`.
+2. **Prefers harness** — Installed policy tells Lead to use bundled `/review`, `/check-work`, and `/implement` (when invoked) rather than reinventing them.
+3. **Documents gates** — AGENTS + rules encode measurable gate *policy* (tests, coverage floor when a tool exists, test accuracy, durable waivers).  
+   **Explicit:** Prompt pressure is **not** a hard OS gate. Bootstrap does **not** prove that ordinary “implement this” sessions will enforce gates.
+4. **Proves install (scaffold only)** via:  
+   - **Strict V8** — saved `grok inspect --json` evidence listing the five project skills  
+   - **Mandatory V11** — Fixture A plan review with durable artifact and schema-level pass  
+   - **V13** — targeted-loop dry-run that **fails closed** when Unit commands are NONE  
+   - **Closed Phase 3** — every Project Test Command row is REAL, NONE, or TODO+waiver (never silent TODO)
 
-**Success looks like:** After bootstrap, the five project skill names appear in `grok inspect --json`, Fixture A yields Request Changes / Major Concerns citing verification or testing gaps, Project Test Commands are closed (REAL / NONE / waived TODO), and handoff states V8–V11 results explicitly. Operational accuracy/coverage enforcement is documented and ready for the first product change; Fixture B/C remain post-install on product code.
+**Success looks like (honest):**
+
+| Status field | Meaning |
+|--------------|---------|
+| `bootstrap_status: COMPLETE` | V1–V11 + V13 pass; git full mode; content fidelity checks pass |
+| `bootstrap_status: COMPLETE_DEGRADED` | Same proofs, but git degraded and/or worktree-dependent skills non-operational |
+| `bootstrap_status: INCOMPLETE` | Any of V8, V11, V13, content fidelity, or Phase 3 open TODO without waiver failed |
+| `accuracy_gates: OPERATIONAL` | Unit **and** Regression commands are REAL (Coverage REAL or durable coverage waiver) |
+| `accuracy_gates: NOT_OPERATIONAL` | Unit or Regression is NONE/TODO/waived — **required** on empty/template-only repos |
+
+**COMPLETE does not imply `accuracy_gates: OPERATIONAL`.** On this template repo they are expected to stay `NOT_OPERATIONAL` until product tooling lands and Fixture B/C pass.
 
 ---
 
 ## Non-goals
 
-- Replacing or reimplementing `/implement`, `/review`, `/check-work`, `/code-review`, `/design`, or `/execute-plan`.
-- Shadowing bundled persona names (`reviewer`, `implementer`, `test-writer`, `security-auditor`).
-- Building product application features or generating CI provider YAML.
-- Hardcoding FastAPI, Next.js, or any specific stack as mandatory.
-- Nested subagent trees (Grok depth limit is 1).
-- Assuming `.grok/docs/` or `.grok/workflows/` auto-load into context (they do not).
-- Running Fixture B (seeded bug) or Fixture C (coverage hole) as bootstrap-complete criteria on a template-only / empty product tree.
-- Installing coverage tooling for every language ecosystem.
-- Relying on undocumented persona/role resolution to bind spawn behavior (inject/prepend is the only reliable path).
-- Claiming bootstrap “done” if V8 or V11 fail.
+- Replacing `/implement`, `/review`, `/check-work`, `/code-review`, `/design`, `/execute-plan`.
+- Shadowing bundled personas (`reviewer`, `implementer`, `test-writer`, `security-auditor`).
+- Building product features or CI YAML.
+- Hardcoding FastAPI/Next.js/any stack.
+- Nested subagent trees (depth limit **1**).
+- Assuming `.grok/docs/` or `.grok/workflows/` auto-load.
+- Fixture B/C as bootstrap-complete criteria on empty product trees.
+- Installing coverage tools for every language.
+- Relying on persona/role **resolution** to bind spawn behavior (prepend only).
+- Claiming accuracy/coverage **enforcement is proven** by V8/V11 alone.
+- Treating roles as required for bootstrap (optional catalog metadata only).
+- Paraphrasing bootstrap file bodies (“verbatim in spirit” is **forbidden**).
 
 ---
 
@@ -40,103 +59,182 @@ Install a complete Grok-native agentic software-development team configuration i
 
 | # | Assumption | Falsifier | If false |
 |---|------------|-----------|----------|
-| A1 | Project skills load from `<repo>/.grok/skills/<name>/SKILL.md` with valid frontmatter | Skill names missing from `grok inspect --json` | Fix path/frontmatter; **do not claim bootstrap done** |
-| A2 | Personas load into catalog from `.grok/personas/*.toml` but do **not** auto-bind on spawn | Spawn with only `[gf-qa]` tag and no prepended body acts as generic agent | Lead/skills must read + prepend instruction files on every spawn |
-| A3 | `[tag]` in spawn `description` is pager UI only | Wrong tag only mislabels | Missing prepend is the real failure; keep tags for UX only |
-| A4 | Only the parent session can `spawn_subagent` (depth 1) | Child spawn errors | All loops orchestrated by Lead; no nested skill auto-fire from children |
-| A5 | `capability_mode: read-only` has no shell (no git, no tests) | QA cannot run test commands | Always set `execute` or `all` on spawn for test runners |
-| A6 | Durable plans live in `docs/plans/` after Plan Mode allows non-plan writes / after exit; session plan is under `~/.grok/sessions/.../plan.md` | Reviewer finds empty or wrong plan path | Copy session plan to `docs/plans/<name>.md` before critique |
-| A7 | Bundled `/review` and `/check-work` remain available; `/implement` is slash-only | Skill missing from inspect | Document fallback / install bundled skills; do not invent parallel roots |
-| A8 | Auto-loaded rules are root `AGENTS.md` + `.grok/rules/*.md` only | Policy ignored in practice | Put short gates in AGENTS + rules; long prose in `.grok/docs/` with explicit `read_file` in skills |
-| A9 | Target is a **git** repository for full protocol (`projectRoot` = git root) | `git rev-parse` fails; `projectRoot: null` | Phase 0: `git init` with user OK, or config-only degraded mode |
-| A10 | Project Test Commands are filled from manifests **or** durable waiver exists | Silent `TODO` forever | Phase 3 fails closed |
-| A11 | Prompt pressure is not a hard OS gate; Lead can skip protocol | Ordinary “implement this” skips post-change | Prefer explicit slash skills; Fixture A proves plan-review path only |
-| A12 | `/check-work` is session-adequacy verification, not a coverage meter | Bootstrap session PASSes without product tests | Do not treat VERDICT alone as coverage proof |
-| A13 | Source of truth for file bodies is bootstrap v1.4 sections 1–10; extraction uses section path headings and `~~~~` / indented schemas to avoid fence corruption | Truncated QA/Review report schemas | Re-read bootstrap section; prefer write from bootstrap, not improvised stubs |
-| A14 | Plugin `/cold-review` may be missing or `[compat unresolved]` in this workspace | Inspect does not list cold-review | Fallback `/plan-review-loop`; V10 documents status; do not claim cold-review works |
+| A1 | Skills load from `<repo>/.grok/skills/<name>/SKILL.md` | Names missing from inspect JSON | Fix path/frontmatter; status = INCOMPLETE |
+| A2 | Personas catalog from `.toml` but do **not** auto-bind | Tag-only spawn = generic agent | Always read + prepend instruction md |
+| A3 | `[tag]` in description is UI-only | Wrong tag only mislabels | Missing prepend is the real failure |
+| A4 | Only parent can `spawn_subagent` (depth 1) | Child spawn errors | Lead orchestrates all loops |
+| A5 | `read-only` has no shell | QA cannot run tests | Spawn tests with `execute` or `all` |
+| A6 | Durable plans under `docs/plans/`; session plan under `~/.grok/sessions/...` (Windows: `%USERPROFILE%\.grok\sessions\...`) | Wrong path | Copy to `docs/plans/` before critique |
+| A7 | Bundled `/review` + `/check-work` available; `/implement` slash-only | Missing from inspect | Document fallback; no parallel roots |
+| A8 | Auto-load: root `AGENTS.md` + `.grok/rules/*.md` only | Policy ignored | Short gates in AGENTS/rules; full standards via `read_file` |
+| A9 | Full protocol needs **git** (`projectRoot` = git root) | `git rev-parse` fails | Phase 0: init with OK, or COMPLETE_DEGRADED |
+| A10 | Test commands filled or waived | Silent TODO | Phase 3 fails closed |
+| A11 | Prompt pressure ≠ hard gate | Protocol skipped in normal use | Prefer slash skills; do not claim OS enforcement |
+| A12 | `/check-work` = session adequacy, not coverage % | PASS without product tests | Never treat VERDICT as coverage proof |
+| A13 | **File bodies = exact extract** from bootstrap v1.4 §1–10 fences | Required phrases missing | Re-extract; no paraphrase |
+| A14 | `/cold-review` may be missing/unresolved | Not in inspect | V10 fallback; use `/plan-review-loop` for V11 |
+| A15 | V11 must run in a **parent** session with spawn rights | Implementer is a depth-1 child | Mark V11 blocked/INCOMPLETE; do not fake review in Lead-only chat without recording `spawn_used: false` |
+| A16 | Same-session skill discovery may require re-open or new session after writing skills | Slash/inspect misses new skills | Re-run inspect; if still missing, INCOMPLETE with recovery steps |
 
 ---
 
 ## Risks
 
-| Risk | Impact | Mitigation |
-|------|--------|------------|
-| Shadow bundled personas | Catalog collision; wrong specialist behavior | Prefix only `gf-*`; never create `reviewer.toml` etc. |
-| Double review loop (`/implement` then `/review`) | Token waste or skipped gates | De-dupe rule: skip `/review` only after clean implement + zero open bugs + tree match |
-| `read-only` QA cannot run tests | False NO-GO or invented results | Explicit `capability_mode: execute\|all` on every QA spawn |
-| Silent TODO test commands | Gates never operational | Phase 3 closed outcomes only; waiver path required |
-| Non-git directory | `/review` local mode, worktrees, diff selection fail | Phase 0 gate; degraded handoff |
-| Waiver evaporates | Next session re-blocks or silently GO | Only `docs/waivers/*.md` counts |
-| Severity taxonomy mismatch | Inconsistent merge decisions | Severity → gate map in AGENTS + rules |
-| Nested fence corruption extracting bootstrap | Malformed skills/personas | Use bootstrap `~~~~` sections; verify non-empty instruction files |
-| Skill auto-invoke mid-implement | Concurrent orchestrators; depth errors | `disable-model-invocation: true` on orchestration skills |
-| Roles treated as spawn binding | Capability defaults never applied | Roles optional; always prepend + set capability on spawn |
-| V8 soft-pass if CLI “unavailable” | Ship without discovery proof | **Strict V8:** CLI unavailable = bootstrap incomplete |
-| Fixture A skipped under time pressure | No behavioral proof | V11 mandatory for “bootstrap done” |
-| AGENTS.md merge loss | Project-specific rules deleted | Timestamped backup; never overwrite existing `.bak-*` |
-| Parallel fullstack on non-git / empty product | Skill claims more than it can deliver | Prerequisites check; sequential `/implement` recommended |
+| Risk | Mitigation |
+|------|------------|
+| Content divergence from v1.4 | Path↔section extract map + required-phrase checks (Phase 2.9) |
+| Fence corruption | Document fence styles per path; schema field checklist |
+| Ceremony without gate proof | V13 fail-closed dry-run; `accuracy_gates` status field |
+| V11 keyword gaming | Schema pass criteria + durable artifact + gold-standard list |
+| Self-review without spawn | Record `spawn_used`; prefer real spawn; flag if false |
+| Double orchestration | De-dupe with defined artifacts; one orchestrator rule |
+| Non-git / Windows PATH | Phase 0 + COMPLETE_DEGRADED; PowerShell notes |
+| Silent TODO / waiver theater | NONE does not become OPERATIONAL via waiver |
+| Re-bootstrap clobber | Phase 0 re-run matrix; timestamped backups |
+| Partial install | Resume markers; do not claim COMPLETE mid-tree |
+| Roles mistaken for binding | Install optional; AGENTS says “not spawn binding” |
+| Parallel-fullstack overclaim | Install skill but handoff marks degraded if no git |
 
 ---
 
 ## Exploration findings
 
-**Workspace reality (2026-07-12):**
+**Workspace / remote (2026-07-12):**
 
 | Finding | Detail |
 |---------|--------|
-| Repo contents | Only `grokbuild-agentic-dev-team-template-bootstrap.md` and prior `.review.md` at root; no product app |
-| `docs/plans/` | Did not exist before this plan; no `_archive/` |
-| Git | Bootstrap assumes git may be absent; Phase 0 must check `git rev-parse --show-toplevel` |
-| Product stack | None — Project Test Commands expected to resolve to `NONE` or waived `TODO` for unit/coverage/regression |
-| Prior art | Source bootstrap v1.4 already incorporates v1.1/v1.3 cold-review fixes (`.grok/` paths, SKILL.md shape, gf-* personas, harness-first, durable waivers, strict V8, Fixture A) |
-| Files most likely touched | Root `AGENTS.md`; entire `.grok/**` tree; `docs/waivers/`; `docs/plans/` (fixture copy); `fixtures/agentic-template-acceptance/` |
-| Patterns | No existing project skills/personas to match — **create from bootstrap sections 1–10 verbatim in spirit** (same structure, gates, schemas) |
-| Tests/fixtures | Acceptance fixtures are part of the deliverable, not pre-existing product tests |
-| Collisions to avoid | Do not create skill named `review` / `code-review`; do not create personas shadowing bundled names; do not create `.grokbuild/` |
+| GitHub | https://github.com/irichner/grokbuild-dev-team-template — `main` has bootstrap + this plan tree |
+| Product app | None |
+| Stack manifests | None → expect Project Test Commands = NONE |
+| Prior plan | Draft v1 + three cold reviews; this is Draft v2 |
+| Files to create | Root `AGENTS.md`; entire `.grok/**`; `docs/waivers/`; `fixtures/agentic-template-acceptance/` |
+| Content source | **Only** bootstrap v1.4 sections 1–10 — copy, do not invent |
+| OS | Author environment is Windows/PowerShell; commands must work or note Unix equivalents |
 
-**Implication:** This implementation is a **config scaffold install**, not a product feature. Verification is discovery + Fixture A, not app test green. First real feature branch must run Fixture B/C when product code exists.
+**Implication:** Config scaffold install. Prove discovery + plan-review path + fail-closed test loop. Do not claim accuracy gates operational until REAL unit/regression commands and (post-install) Fixture B/C.
+
+---
+
+## Content authority (mandatory)
+
+### Rule
+
+1. Open `grokbuild-agentic-dev-team-template-bootstrap.md` (v1.4).  
+2. For each path below, extract the fenced body under that section heading.  
+3. **Write the extracted body to disk unchanged in substance** (normalize line endings OK; do not rewrite gates, schemas, or steps).  
+4. **Forbidden:** “verbatim in spirit,” paraphrased skills, stub personas.  
+5. After write, run **required-phrase checks** (Phase 2.9).
+
+### Fence extraction procedure
+
+| Outer fence style in bootstrap | Paths |
+|--------------------------------|--------|
+| `~~~~markdown` / `~~~~toml` | Most bodies (AGENTS, README, rules, most personas, skills, workflows, docs, waivers, fixtures) |
+| Five backticks `` ``` `` `` `markdown` | `gf-qa.md`, `gf-plan-reviewer.md` only |
+
+**Steps:**
+
+1. Find heading for path (e.g. `### \`.grok/personas/instructions/gf-qa.md\``).  
+2. Open fence on next fence line; strip language tag.  
+3. Close at matching close fence of same style.  
+4. For QA/Review **schemas**: they are **indented plain-text blocks** inside the instruction files — preserve indentation; do not drop them.  
+5. Do not leave fence markers inside the written file.
+
+### Path ↔ bootstrap section map
+
+| Write path | Bootstrap section |
+|------------|-------------------|
+| `AGENTS.md` | §1 |
+| `.grok/README.md` | §2 |
+| `.grok/rules/accuracy-coverage.md` | §3 |
+| `.grok/personas/gf-backend.toml` | §4 |
+| `.grok/personas/instructions/gf-backend.md` | §4 |
+| `.grok/personas/gf-frontend.toml` | §4 |
+| `.grok/personas/instructions/gf-frontend.md` | §4 |
+| `.grok/personas/gf-qa.toml` | §4 |
+| `.grok/personas/instructions/gf-qa.md` | §4 |
+| `.grok/personas/gf-plan-reviewer.toml` | §4 |
+| `.grok/personas/instructions/gf-plan-reviewer.md` | §4 |
+| `.grok/roles/gf-qa.toml` | §5 (optional; install for catalog parity) |
+| `.grok/roles/gf-plan-reviewer.toml` | §5 |
+| `.grok/skills/plan-review-loop/SKILL.md` | §6 |
+| `.grok/skills/targeted-unit-test-loop/SKILL.md` | §6 |
+| `.grok/skills/regression-test-loop/SKILL.md` | §6 |
+| `.grok/skills/post-change-accuracy-protocol/SKILL.md` | §6 |
+| `.grok/skills/parallel-fullstack-feature/SKILL.md` | §6 |
+| `.grok/workflows/post-change-testing-protocol.md` | §7 |
+| `.grok/docs/test-accuracy-standards.md` | §8 |
+| `.grok/docs/coverage-policy.md` | §8 |
+| `.grok/docs/privacy-safety.md` | §8 |
+| `docs/waivers/README.md` | §9 |
+| `fixtures/agentic-template-acceptance/README.md` | §10 |
+| `fixtures/agentic-template-acceptance/bad-plan.md` | §10 |
+| `fixtures/agentic-template-acceptance/seeded-bug-notes.md` | §10 |
 
 ---
 
 ## Phases
 
-### Phase 0 — Safety & prerequisites
+### Phase 0 — Safety, prerequisites, re-run rules
 
-**Objective:** Establish git posture and protect existing project rules before writing anything under `.grok/`.
+**Objective:** Git posture, backups, install-mode decision, re-bootstrap rules.
 
-- [ ] Run `git rev-parse --show-toplevel`
-- [ ] If fail: present user choice — (a) `git init` with explicit approval, or (b) config-only **degraded** install; record choice in handoff
-- [ ] If degraded: document that `/review` local mode, worktrees, and git-diff test selection are non-operational; do not claim parallel-fullstack fully works
-- [ ] If root `AGENTS.md` exists: copy to `AGENTS.md.bak-before-agentic-template-<YYYYMMDD>` (do not overwrite an existing backup with the same or different timestamp if a prior bootstrap backup already exists — use unique timestamp)
-- [ ] Confirm working tree will use **`.grok/` only** (never `.grokbuild/`)
-- [ ] Confirm persona names will be `gf-*` only (no bundled name collisions)
+#### 0.1 Git
 
-**Phase verification:** Git status known (full vs degraded); backup policy applied if AGENTS existed; no writes yet that violate naming rules.
+- [ ] Run `git rev-parse --show-toplevel` (PowerShell/cmd same).  
+- [ ] **OK** → `git_mode: full`.  
+- [ ] **Fail** → ask user: (a) `git init` + initial commit with approval, or (b) config-only.  
+  - (a) success → `git_mode: full`  
+  - (b) → `git_mode: degraded` (max status COMPLETE_DEGRADED)
+
+#### 0.2 Backups (first install or re-run)
+
+- [ ] If root `AGENTS.md` exists: copy to `AGENTS.md.bak-before-agentic-template-<YYYYMMDD-HHMMSS>` (unique; never overwrite existing backups).  
+- [ ] If `.grok/` already exists (re-bootstrap):
+
+| Existing path | Action |
+|---------------|--------|
+| `.grok/skills/*`, personas, rules matching template names | **Overwrite** with bootstrap extract (template is source of truth for those paths) |
+| Other `.grok/**` files not in map | **Leave** (do not delete unknown project files) |
+| `docs/waivers/*.md` except README | **Leave** (never clobber human waivers) |
+| `docs/plans/acceptance-bad-plan.md` | If exists, move to `docs/plans/acceptance-bad-plan.bak-<timestamp>.md` before re-copy |
+| Custom edits inside mapped template files | Overwritten; operator must re-apply customs after — document in handoff |
+
+#### 0.3 Forbidden names / roots
+
+- [ ] Never create `.grokbuild/`.  
+- [ ] Never create personas `reviewer`, `implementer`, `test-writer`, `security-auditor`.  
+- [ ] Never create skills named `review` or `code-review`.
+
+#### 0.4 Windows / shell notes
+
+- [ ] Prefer `grok` on PATH; if missing try `where.exe grok` / `Get-Command grok`.  
+- [ ] Use PowerShell-friendly commands in AGENTS when filling REAL commands later (avoid bash-only pipes unless repo uses them).  
+- [ ] Session plans: `%USERPROFILE%\.grok\sessions\<encoded-cwd>\<session-id>\plan.md`.  
+- [ ] CRLF vs LF: OK for markdown; ensure YAML frontmatter of SKILL.md still parses (no BOM).
+
+#### 0.5 Partial-failure / rollback
+
+- [ ] On abort mid-Phase-2: leave tree; write `docs/plans/bootstrap-install-state.md` with `phase: partial`, last file written.  
+- [ ] Rollback: restore `AGENTS.md` from latest `.bak-*` if needed; delete `.grok/` only with **explicit user approval** (destructive).  
+- [ ] Resume: re-run from Phase 0.2, then Phase 1–2 overwrite mapped paths.
+
+**Phase verification:** `git_mode` known; backups done if needed; install-state file created if partial.
 
 ---
 
 ### Phase 1 — Directory structure
 
-**Objective:** Create the full path tree (empty shells ok if contents land in Phase 2).
-
-Create exactly:
+Create:
 
 ```
 .grok/
 ├── README.md
-├── rules/
-│   └── accuracy-coverage.md
+├── rules/accuracy-coverage.md
 ├── personas/
-│   ├── gf-backend.toml
-│   ├── gf-frontend.toml
-│   ├── gf-qa.toml
-│   ├── gf-plan-reviewer.toml
-│   └── instructions/
-│       ├── gf-backend.md
-│       ├── gf-frontend.md
-│       ├── gf-qa.md
-│       └── gf-plan-reviewer.md
-├── roles/
+│   ├── gf-backend.toml, gf-frontend.toml, gf-qa.toml, gf-plan-reviewer.toml
+│   └── instructions/{gf-backend,gf-frontend,gf-qa,gf-plan-reviewer}.md
+├── roles/                    # optional catalog only — NOT spawn binding
 │   ├── gf-qa.toml
 │   └── gf-plan-reviewer.toml
 ├── skills/
@@ -145,286 +243,374 @@ Create exactly:
 │   ├── regression-test-loop/SKILL.md
 │   ├── post-change-accuracy-protocol/SKILL.md
 │   └── parallel-fullstack-feature/SKILL.md
-├── workflows/
-│   └── post-change-testing-protocol.md
-└── docs/
-    ├── privacy-safety.md
-    ├── test-accuracy-standards.md
-    └── coverage-policy.md
+├── workflows/post-change-testing-protocol.md
+└── docs/{privacy-safety,test-accuracy-standards,coverage-policy}.md
 docs/
-├── plans/                    # may already exist (this plan)
-└── waivers/
-    └── README.md
-fixtures/
-└── agentic-template-acceptance/
-    ├── README.md
-    ├── bad-plan.md
-    └── seeded-bug-notes.md
+├── plans/                    # exists
+├── waivers/README.md
+└── (later) bootstrap-handoff.md, bootstrap-install-state.md, V8/V11 artifacts
+fixtures/agentic-template-acceptance/{README,bad-plan,seeded-bug-notes}.md
 ```
 
-- [ ] Create all directories above
-- [ ] Do **not** create `.grokbuild/`
-- [ ] Do **not** create skill dirs named `review` or `code-review`
-- [ ] Do **not** create persona files named `reviewer.toml`, `implementer.toml`, `test-writer.toml`, `security-auditor.toml`
+- [ ] Create dirs; no forbidden paths.
 
-**Phase verification:** Tree walk matches Phase 1 list; forbidden paths absent.
+**Phase verification:** Tree walk matches map; no `.grokbuild/`.
 
 ---
 
-### Phase 2 — Write file contents
+### Phase 2 — Write file contents (extract only)
 
-**Objective:** Populate every file from bootstrap v1.4 sections 1–10. Extraction: content under each path heading; report schemas use plain indented blocks / tilde fences so triple-backtick extractors do not truncate.
+- [ ] For each row in **Path ↔ bootstrap section map**, extract and write.  
+- [ ] If merging AGENTS into existing project AGENTS: preserve non-template project rules; ensure template sections (pipeline, de-dupe, severity map, subagent rules, personas table, waivers, Project Test Commands) are present. Prefer replacing a prior GrokForge template block if `Template Version:` marker exists; else append template block under a clear heading and backup first.  
+- [ ] After all writes: **Phase 2.9 content fidelity checks**.
 
-#### 2.1 Root AGENTS.md (Section 1)
+#### Phase 2.9 — Required phrases (fail = re-extract)
 
-- [ ] Write/merge root `AGENTS.md` with: harness-first pipeline, implement/review de-dupe, trivial escape hatch, accuracy gates, severity map, subagent rules, `gf-*` personas table, skill capture (`/create-skill`), secrets, waivers path, Project Test Commands placeholders
-- [ ] If merging with existing AGENTS: preserve project-specific rules; keep AGENTS short (actionable gates + commands); do not delete unique project content
+| File | Must contain (substring checks) |
+|------|----------------------------------|
+| `AGENTS.md` | `post-change-accuracy-protocol`, `de-dupe` or `De-dupe`, `docs/waivers`, `Project Test Commands`, `gf-backend`, `capability_mode`, `≥ 80%` or `80%` |
+| `.grok/rules/accuracy-coverage.md` | `docs/waivers`, `gap`, `capability_mode`, `test-accuracy-standards` |
+| `gf-qa.md` | `QA Test Report`, `Recommendation: GO`, `NO COVERAGE TOOL` or `UNMEASURED`, `test-accuracy-standards` |
+| `gf-plan-reviewer.md` | `Review Report`, `Request Changes`, `bug|gap` or `bug\|gap` |
+| Each skill `SKILL.md` | YAML `name:`, `description:`, `disable-model-invocation: true` |
+| `targeted-unit-test-loop/SKILL.md` | `80%`, `gf-qa`, `execute` |
+| `post-change-accuracy-protocol/SKILL.md` | `SKIPPED` or `de-dupe` / implement, `check-work` |
+| `parallel-fullstack-feature/SKILL.md` | `contract`, `worktree`, `git` |
+| `docs/waivers/README.md` | `Expiry`, `Residual risk`, `Gate waived` |
+| `fixtures/.../bad-plan.md` | `Works correctly` |
 
-#### 2.2 `.grok/README.md` (Section 2)
+- [ ] Roles files: if installed, AGENTS must still say roles are **not** spawn binding.  
+- [ ] Read each of four instruction files; confirm non-empty and schema blocks present for QA + plan-reviewer.
 
-- [ ] What auto-loads vs reference-only table
-- [ ] Prefer bundled skills list
-- [ ] Git required note
-- [ ] Deprecated `.grokbuild/` note
-
-#### 2.3 Auto-loaded rules (Section 3)
-
-- [ ] `.grok/rules/accuracy-coverage.md`: gates, severity map, test-accuracy summary, orchestration rules, waiver pointer, `read_file` mandate for full test-accuracy standards
-
-#### 2.4 Personas (Section 4)
-
-- [ ] `gf-backend.toml` + `instructions/gf-backend.md` (non-empty)
-- [ ] `gf-frontend.toml` + `instructions/gf-frontend.md` (non-empty)
-- [ ] `gf-qa.toml` + `instructions/gf-qa.md` including QA Test Report schema and coverage measurement notes
-- [ ] `gf-plan-reviewer.toml` + `instructions/gf-plan-reviewer.md` including Review Report schema
-- [ ] Each toml has `description` and `instructions_file` (or `instructions`); paths resolve
-
-#### 2.5 Optional roles (Section 5)
-
-- [ ] `.grok/roles/gf-qa.toml` and `gf-plan-reviewer.toml`
-- [ ] Document in skill text / AGENTS that roles are **not** spawn binding
-
-#### 2.6 Skills (Section 6)
-
-For each skill: YAML frontmatter with `name`, `description`, and `disable-model-invocation: true`.
-
-- [ ] `plan-review-loop`: prefer cold-review when inspect shows it; prepend gf-plan-reviewer; Lead-only spawn; max 2 passes; residual Major Concerns → durable waiver
-- [ ] `targeted-unit-test-loop`: git changed files; command from AGENTS; coverage gate; accuracy standards read; QA report; max 3 fix cycles
-- [ ] `regression-test-loop`: Quick vs Extended triggers; flake re-run ≤2 + quarantine in report; exit 0 or durable waiver
-- [ ] `post-change-accuracy-protocol`: order targeted → review (de-dupe) → regression → check-work → merge decision; ownership rule vs concurrent `/implement`
-- [ ] `parallel-fullstack-feature`: git prerequisite; contract artifact path `docs/plans/<feature>-contract.md`; worktree spawn; post-change protocol; re-freeze on drift
-
-#### 2.7 Workflows + reference docs (Sections 7–8)
-
-- [ ] `.grok/workflows/post-change-testing-protocol.md` (narrative pointer to skill)
-- [ ] `.grok/docs/test-accuracy-standards.md`
-- [ ] `.grok/docs/coverage-policy.md` (80% gate, proxy, recipes, UNMEASURED)
-- [ ] `.grok/docs/privacy-safety.md`
-
-#### 2.8 Waivers + fixtures (Sections 9–10)
-
-- [ ] `docs/waivers/README.md` with template fields (date, author, scope, gate, residual risk, follow-up, expiry)
-- [ ] `fixtures/agentic-template-acceptance/README.md` (A mandatory; B/C post-install)
-- [ ] `fixtures/.../bad-plan.md` (non-observable verification intentionally weak)
-- [ ] `fixtures/.../seeded-bug-notes.md` (language-agnostic bug sketch)
-
-**Phase verification:** Every path from Phase 1 has non-empty content matching bootstrap intent; each persona instruction file readable and non-empty; each skill has frontmatter `name` + `description` + `disable-model-invocation: true`; no truncated schema (QA report and Review report blocks present).
+**Phase verification:** All map paths exist; Phase 2.9 all pass; no paraphrase drift.
 
 ---
 
-### Phase 3 — Project Test Commands (closed)
+### Phase 3 — Project Test Commands (closed) + accuracy_gates flag
 
-**Objective:** Fill AGENTS.md Project Test Commands from repo reality; no silent permanent TODO.
-
-- [ ] Scan manifests and scripts: `package.json`, `pyproject.toml`, `Cargo.toml`, `go.mod`, `Makefile`, CI configs, README
-- [ ] For each row (Build, Unit tests, Coverage, Regression/full suite, Lint/typecheck), set **exactly one** outcome:
+- [ ] Scan: `package.json`, `pyproject.toml`, `Cargo.toml`, `go.mod`, `Makefile`, CI configs, README, `*.sln` / `*.csproj` if present.  
+- [ ] Record scan evidence in handoff (`scanned_paths: [...]`, `found: [...]`).  
+- [ ] Fill each AGENTS row with **exactly one**:
 
 | Outcome | When | Gate impact |
 |---------|------|-------------|
-| Real command string | Found in repo | Skills use it |
-| `NONE — no tool in repo` | Scanned, absent | Coverage → `NO COVERAGE TOOL`; merge needs waiver or tooling |
-| `TODO` + durable waiver | Ambiguous after scan | Write `docs/waivers/bootstrap-test-commands.md` listing incomplete rows + residual risk; get user fill or confirm |
+| Real command | Found | Skills use it |
+| `NONE — no tool in repo` | Scanned, absent | Not OPERATIONAL for that capability |
+| `TODO` + `docs/waivers/bootstrap-test-commands.md` | Ambiguous | Must list rows, residual risk, expiry; **still NOT_OPERATIONAL** if Unit/Regression incomplete |
 
-- [ ] If Unit and Regression both NONE/TODO without waiver: install may complete files but handoff **must not** claim accuracy gates operational
-- [ ] For this template-only workspace: expect NONE or waived TODO for unit/coverage/regression; document that clearly
+**accuracy_gates rules:**
 
-**Phase verification:** No Project Test Command row is bare `TODO` without a linked waiver file; AGENTS.md reflects REAL / NONE / waived status.
+- [ ] If Unit is REAL **and** Regression is REAL **and** (Coverage REAL **or** coverage waiver exists) → may set `accuracy_gates: OPERATIONAL` only after first successful targeted+regression run (usually post-product).  
+- [ ] If Unit or Regression is NONE/TODO/waived → **must** set `accuracy_gates: NOT_OPERATIONAL`.  
+- [ ] A waiver **never** upgrades `accuracy_gates` to OPERATIONAL.
+
+**This template repo expectation:** all NONE (or waived TODO) → `accuracy_gates: NOT_OPERATIONAL`.
+
+**Phase verification:** No bare TODO; `accuracy_gates` set correctly; waiver file present if any TODO.
 
 ---
 
-### Phase 4 — Bootstrap verification (mandatory)
+### Phase 4 — Bootstrap verification
 
-**Objective:** Prove discovery and behavioral plan-review; static tree alone is insufficient.
+| # | Check | Pass criteria |
+|---|--------|----------------|
+| V1 | Tree | Map paths exist; no `.grokbuild/`; no forbidden persona names |
+| V2 | Skill shape | Each skill has `name` + `description` + `disable-model-invocation: true` |
+| V3 | Personas | Four toml + four non-empty instructions; 2.9 phrases for QA/plan-reviewer |
+| V4 | Rules | accuracy-coverage has gates + severity + waiver pointer |
+| V5 | AGENTS | Pipeline, de-dupe, severity, commands, waivers |
+| V6 | Non-stub skills | Numbered steps; post-change has implement skip path |
+| V7 | Fixtures + waivers README | Present |
+| V8 | **Discovery (strict)** | See below |
+| V9 | Protocol map | Print order + de-dupe rule to handoff |
+| V10 | Cold-review probe | Note present/absent/unresolved in handoff |
+| V11 | **Fixture A** | See below |
+| V12 | Fixture B/C | Not required; document readiness (below) |
+| V13 | **Fail-closed targeted dry-run** | See below |
 
-| # | Check | Pass criteria | Status |
-|---|--------|---------------|--------|
-| V1 | Tree | Phase 1 paths exist; no `.grokbuild/`; no forbidden persona filenames | [ ] |
-| V2 | Skill shape | Each project skill is `SKILL.md` with YAML `name` + `description` | [ ] |
-| V3 | Persona files | Each `gf-*.toml` has description + instructions path; each instructions file non-empty (read-verified) | [ ] |
-| V4 | Auto-load rules | `.grok/rules/accuracy-coverage.md` has gates + severity map + waiver pointer | [ ] |
-| V5 | AGENTS.md | Pipeline + de-dupe + severity map + Project Test Commands + waiver path | [ ] |
-| V6 | Non-stub skills | Targeted + regression have numbered steps + QA schema references; post-change has implement de-dupe | [ ] |
-| V7 | Fixtures | Acceptance fixtures present; `docs/waivers/README.md` present | [ ] |
-| V8 | **Discovery (strict)** | `grok inspect --json` lists skill names: `plan-review-loop`, `targeted-unit-test-loop`, `regression-test-loop`, `post-change-accuracy-protocol`, `parallel-fullstack-feature` (project/local/repo source). **Missing → fail.** CLI unavailable → **do not pass**; handoff incomplete | [ ] |
-| V9 | Protocol map | Print post-change order including implement/review de-dupe | [ ] |
-| V10 | Cold-review probe | Note if `/cold-review` in inspect; if absent, document fallback-only | [ ] |
-| V11 | **Fixture A (behavioral)** | Copy `fixtures/.../bad-plan.md` → `docs/plans/acceptance-bad-plan.md`; run `/plan-review-loop` or `/cold-review`. **Pass:** overall Request Changes or Major Concerns **and** mentions verification and/or testing gaps. Cannot run → V11 fail, bootstrap incomplete | [ ] |
-| V12 | Fixture B/C | Not required for bootstrap complete; document as post-install | [ ] |
+#### V8 — Discovery (strict)
 
-- [ ] Execute V1–V11 in order; record pass/fail with evidence (commands, excerpts)
-- [ ] On V8 or V11 fail: stop claiming done; handoff status = incomplete
+- [ ] Run `grok inspect --json` from repo root (git root if full mode).  
+- [ ] Save raw output to `docs/plans/bootstrap-v8-inspect.json` (or `.txt` if not valid JSON).  
+- [ ] Assert these **names** appear as project/local/repo skills (not only as unrelated plugins):  
+  `plan-review-loop`, `targeted-unit-test-loop`, `regression-test-loop`, `post-change-accuracy-protocol`, `parallel-fullstack-feature`  
+- [ ] **Fail** if any missing.  
+- [ ] If CLI unavailable: **do not pass V8**; `bootstrap_status: INCOMPLETE`; list names for user verification.  
+- [ ] Optional: note whether personas appear in UI/`/personas` — not required for V8 pass, record as V8b if checked.
 
-**Phase verification:** All of V1–V7, V9, V10 done; V8 and V11 pass (or handoff explicitly incomplete). V12 documented only.
+#### V11 — Fixture A (behavioral)
+
+**Gold-standard concerns** (review must cover at least 2 of these concretely, not one keyword):
+
+1. Goal is non-measurable (“make the app better”).  
+2. Steps lack concrete files/behaviors.  
+3. Testing Strategy is non-observable (“Works correctly”).  
+4. Verification is non-observable (“It should work”).  
+
+**Procedure:**
+
+1. Copy `fixtures/agentic-template-acceptance/bad-plan.md` → `docs/plans/acceptance-bad-plan.md` (backup first if exists).  
+2. Prefer `/cold-review` if V10 says available; else `/plan-review-loop` or Lead re-enacts skill steps with spawn.  
+3. **Spawn recipe (Lead parent only):**  
+   - `read_file` `.grok/personas/instructions/gf-plan-reviewer.md`  
+   - Prepend full text to child prompt  
+   - `subagent_type`: `explore` or `general-purpose` with `capability_mode: read-only`  
+   - `description`: `[gf-plan-reviewer] Fixture A plan review`  
+   - Prompt includes plan path + Review Report schema + “Do not edit product code”  
+4. Write durable artifact: `docs/plans/acceptance-bad-plan.review.md` containing Review Report fields.  
+5. Record in handoff: `spawn_used: true|false` (false → note limitation; still require schema-quality report).
+
+**Pass (all required):**
+
+- Overall is `Request Changes` or `Major Concerns` (**Approve = fail V11**; one retry allowed, then fail).  
+- Non-empty section on test/coverage or verification gaps.  
+- At least one Required Change with severity `bug` or `gap` tied to verification/testing.  
+- At least **2** gold-standard concerns addressed in substance.  
+- Durable review file exists.
+
+#### V13 — Targeted loop fail-closed dry-run
+
+When Unit command is NONE or TODO without REAL command:
+
+- [ ] Lead runs targeted-loop **steps** (or slash skill if available): read AGENTS commands → conclude NO-GO.  
+- [ ] Write `docs/plans/bootstrap-v13-targeted-dry-run.md` with: commands seen, result `NO-GO`, reason `Unit tests command not REAL`.  
+- [ ] **Pass:** explicit NO-GO (proves gate fails closed).  
+- [ ] If Unit is REAL: run real targeted selection on a trivial path or document skip with reason; still record artifact.
+
+#### De-dupe definitions (install into skills/AGENTS; operational for later)
+
+| Term | Definition |
+|------|------------|
+| Open bugs | `/review` or implement issue list with severity `bug` and status open |
+| Gate-mapped gaps | Open `suggestion` about missing tests / correctness / security / data loss → treat as gap; **blocks** skip |
+| Tree match | `git status --porcelain` empty for paths in review scope, or same HEAD as implement review + no unstaged changes to those paths |
+| Skip `/review` allowed only if | Clean `/implement` + zero open bugs + zero gate-mapped gaps + tree match; record skip reason in protocol summary |
+
+#### Fixture B/C readiness (V12 — post-install, not bootstrap complete)
+
+Ready when **all** true:
+
+1. `accuracy_gates` can become OPERATIONAL (Unit + Regression REAL).  
+2. At least one product module/source tree exists.  
+3. For C: Coverage command REAL.  
+4. On throwaway branch: run B then C per `fixtures/agentic-template-acceptance/README.md`.  
+5. Record results under `docs/plans/fixture-b-result.md` / `fixture-c-result.md`.
+
+**Phase verification:** V1–V11, V13 done with artifacts; V12 readiness text in handoff.
 
 ---
 
 ### Phase 5 — Handoff
 
-**Objective:** Leave the human operator with an actionable completion report.
+Write durable handoff: **`docs/plans/bootstrap-handoff.md`**.
 
-- [ ] List all created/updated files
-- [ ] State V8 result with skill name evidence (or blocked reason)
-- [ ] State V11 result with overall verdict + quote of verification/testing gap language
-- [ ] State V10 cold-review availability
-- [ ] Summarize Project Test Commands status per row: `REAL` / `NONE` / `WAIVED`
-- [ ] State git mode: full vs degraded
-- [ ] Ask user to fill remaining commands or confirm waivers
-- [ ] Point to Fixture B/C for first product feature branch
-- [ ] Remind: persona tags are UI-only; always prepend instructions; always set `capability_mode` for tests
+Required fields:
 
-**Phase verification:** Handoff message contains every bullet above; no claim of “bootstrap done” if V8 or V11 failed.
+```markdown
+# Bootstrap handoff
 
----
-
-## Implementation order (recommended DAG)
-
-```text
-Phase 0 ──► Phase 1 ──► Phase 2 (can write files in parallel groups)
-                              │
-                              ├─ 2.1 AGENTS.md
-                              ├─ 2.2–2.3 README + rules
-                              ├─ 2.4–2.5 personas + roles
-                              ├─ 2.6 five skills
-                              └─ 2.7–2.8 docs, waivers, fixtures
-                         Phase 3 (depends on AGENTS + repo scan)
-                         Phase 4 (depends on Phase 2+3 complete)
-                         Phase 5 (depends on Phase 4 results)
+- Date:
+- Template version: 1.4
+- bootstrap_status: COMPLETE | COMPLETE_DEGRADED | INCOMPLETE
+- accuracy_gates: OPERATIONAL | NOT_OPERATIONAL
+- git_mode: full | degraded
+- V8: PASS|FAIL (path to inspect artifact)
+- V10 cold-review: available | absent | unresolved
+- V11: PASS|FAIL (path to review artifact; spawn_used)
+- V13: PASS|FAIL (path to dry-run artifact)
+- Project Test Commands: (each row REAL|NONE|TODO+waiver)
+- Files created/updated: (list)
+- Waivers present:
+- Next steps: fill commands / Fixture B/C when ready
+- Reminders: prepend personas; tags UI-only; set capability_mode; roles not binding
 ```
 
-**Parallelism note:** Within Phase 2, persona files, skill files, and docs can be written concurrently. Phase 3 must wait for AGENTS skeleton. Phase 4 must wait for all files + commands closure.
+- [ ] Do **not** set COMPLETE if V8, V11, V13, or 2.9 failed.  
+- [ ] Ask user to confirm waivers / fill commands if needed.  
+- [ ] Point to Fixture B/C readiness.
 
-**Content authority:** Prefer bootstrap v1.4 body text for each path. Do not invent alternate gate thresholds (keep ≥80% changed-line / proxy). Do not weaken V8/V11.
+**Phase verification:** Handoff file exists with all fields; status consistent with evidence.
 
 ---
 
-## Canonical runtime rules (encode in AGENTS + skills; do not re-derive)
+## Implementation order (DAG)
 
-1. Lead orchestrates all spawns — depth 1.
-2. Persona binding = read instruction md + **prepend** to child prompt. No `persona=` parameter.
-3. Description tags = TUI labels only.
-4. Always set `capability_mode` on spawn: plan review `read-only`/`explore`/`plan`; tests `execute`/`all`.
-5. Worktrees require git; integrate via worktree apply before claiming done.
-6. `/check-work` → look for `VERDICT: PASS|FAIL`; session adequacy only.
-7. One orchestrator at a time (Lead post-change **or** `/implement` **or** one project orchestration skill).
-8. Bundled `test-writer` may be prepended when writing tests outside `/implement`; never shadow the name with a project persona file.
+```text
+Phase 0 ──► Phase 1 ──► Phase 2 (sequential writes OK; parallel only if no partial handoff risk)
+                    └──► Phase 2.9 fidelity
+                         Phase 3 (scan + AGENTS commands + accuracy_gates)
+                         Phase 4 (V1–V13; parent session for V11)
+                         Phase 5 (bootstrap-handoff.md)
+```
 
-### Severity → merge gate map (must appear in AGENTS + rules)
+---
 
-| Source | Gate effect |
-|--------|-------------|
-| `/review` **bug** (open) | Block unless durable waiver |
-| `/review` **suggestion** (missing tests / wrong behavior / security / data loss) | Treat as **gap** → block |
-| Other **suggestion** / **nit** | Non-blocking |
-| QA test-accuracy finding (circular, happy-path-only auth/errors) | **gap** → block |
-| Plan-reviewer Required Changes `bug\|gap` | Block implement until revised or durable waiver for residual Major Concerns |
+## Spawn cookbook (copy into operator muscle memory)
 
-### Implement vs `/review` de-dupe (must appear in AGENTS + post-change skill)
+### Plan reviewer
+
+```
+read_file .grok/personas/instructions/gf-plan-reviewer.md
+spawn_subagent:
+  subagent_type: explore   # or general-purpose + capability_mode: read-only
+  capability_mode: read-only
+  description: [gf-plan-reviewer] plan review
+  prompt: <full instruction md> + plan path + Review Report schema + no product edits
+```
+
+### QA / tests
+
+```
+read_file .grok/personas/instructions/gf-qa.md
+spawn_subagent:
+  subagent_type: general-purpose
+  capability_mode: execute   # or all — never read-only
+  description: [gf-qa] targeted tests
+  prompt: <full instruction md> + scope + AGENTS commands + QA Test Report schema
+```
+
+### Backend / frontend implementer
+
+```
+read_file .grok/personas/instructions/gf-backend.md  # or gf-frontend
+spawn:
+  capability_mode: all
+  description: [gf-backend] implement …
+  prompt: <full instruction md> + plan + constraints
+  isolation: worktree  # only if git_mode full
+```
+
+**Never** rely on role TOML or persona `default_capability_mode` alone for the inject path.
+
+---
+
+## Waiver lifecycle
+
+| Rule | Detail |
+|------|--------|
+| Path | `docs/waivers/<short-name>.md` only |
+| Author | Human user name required; agent may draft but human must confirm (record confirmer) |
+| Required fields | Date, Author, Scope, Gate waived, Reason, Residual risk, Follow-up, Expiry |
+| Expiry | If past expiry (or event reached) → gate **re-armed**; ignore waiver |
+| Lead before merge | List `docs/waivers/`, filter unexpired, apply only matching scope |
+| Chat LGTM | Not a waiver |
+| bootstrap-test-commands | Allowed for incomplete rows; does **not** set accuracy_gates OPERATIONAL |
+
+---
+
+## Canonical policy (must be in extracted AGENTS/skills)
+
+### Severity → gate
+
+| Source | Effect |
+|--------|--------|
+| `/review` bug open | Block |
+| suggestion: tests/correctness/security/data-loss | gap → block |
+| other suggestion / nit | non-blocking |
+| QA circular / happy-path-only auth-error | gap → block |
+| Plan Required Changes bug\|gap | Block implement until fixed or durable waiver |
+
+### Implement vs `/review` de-dupe
 
 | Situation | Action |
 |-----------|--------|
-| Clean `/implement`, zero open bugs, tree matches review scope | Skip `/review`; record reason |
-| Open gate-blocking issues or tree changed after implement | Run `/review` |
-| Manual / `gf-*` implement | Always `/review` |
-| User requests `/review` | Always run |
+| Clean implement + zero bugs + zero gate-gaps + tree match | Skip `/review`; record reason |
+| Else / manual implement / user request | Run `/review` |
+
+### Runtime hard rules
+
+1. Lead-only spawn (depth 1).  
+2. Prepend instruction files.  
+3. Tags = UI only.  
+4. Always set `capability_mode` on spawn.  
+5. Worktrees need git.  
+6. `/check-work` → `VERDICT` = session adequacy only.  
+7. One orchestrator at a time.  
+8. Do not shadow bundled `test-writer` name.
 
 ---
 
 ## Verification criteria (whole feature)
 
-Bootstrap is **complete** only when all are true:
+Bootstrap is **COMPLETE** or **COMPLETE_DEGRADED** only if:
 
-1. **Tree & policy:** All Phase 1 paths exist with Phase 2 content; no `.grokbuild/`; no shadowed persona/skill names; AGENTS + rules contain pipeline, de-dupe, severity map, waiver path.
-2. **Commands closed:** Every Project Test Command row is REAL, NONE, or TODO with `docs/waivers/…` — never silent TODO.
-3. **V8 strict:** `grok inspect --json` lists all five project skill names (or handoff marked incomplete if CLI blocked — incomplete ≠ done).
-4. **V11 behavioral:** Fixture A plan review returns Request Changes / Major Concerns citing verification and/or testing gaps (or handoff incomplete).
-5. **Handoff honesty:** Git full vs degraded, V8–V11 results, command status, and B/C post-install next steps are explicit.
+1. Content fidelity (2.9) pass for all mapped files.  
+2. Phase 3 closed; `accuracy_gates` set correctly (expected NOT_OPERATIONAL on empty repo).  
+3. V8 pass with saved inspect artifact listing five skills.  
+4. V11 pass with durable review artifact meeting schema + gold-standard bar.  
+5. V13 pass with dry-run NO-GO (when unit not REAL) or documented real run.  
+6. Handoff file written with consistent status.
 
-**Observable artifacts:**
+**COMPLETE_DEGRADED** if above hold but `git_mode: degraded`.
 
-- File tree under `.grok/`, `docs/waivers/`, `fixtures/agentic-template-acceptance/`
-- `docs/plans/acceptance-bad-plan.md` (copy for V11)
-- Plan review output (chat or `*.review.md`) with overall verdict
-- `grok inspect --json` excerpt listing the five skills
-- Optional: `docs/waivers/bootstrap-test-commands.md` if commands incomplete
+**INCOMPLETE** otherwise — tree may exist; do not market as done.
 
 ---
 
 ## Out-of-scope
 
-- CI YAML generation
-- Mutation testing automation
-- Installing coverage tools for every language
-- Graphite automation (`/pr-babysit`, `/execute-plan` when relevant later)
-- Redefining bundled `/implement` internal behavior
-- Fixture B/C as bootstrap-complete on empty product trees
-- Making persona/role product resolution bind without prompt prepend
-- Product feature implementation inside this template repo
-- Hard OS-level enforcement of gates (template is prompt + skill discipline only — A11)
+- CI YAML, mutation testing, installing all coverage tools  
+- Graphite automation  
+- Redefining `/implement` internals  
+- Fixture B/C as bootstrap-complete on empty trees  
+- Hard OS enforcement of gates  
+- Byte-identical round-trip of bootstrap fences (line endings / fence markers stripped is OK)  
+- Making role resolution bind without prepend  
 
 ---
 
 ## How would this fail to ship?
 
-1. Skills under wrong root (`.grokbuild/`) or wrong shape → absent from `grok inspect --json` → V8 fail.
-2. Personas named `reviewer` etc. → shadow bundled catalog → wrong specialist selection.
-3. Nested QA spawns Reviewer → depth-1 error → loops broken.
-4. Coverage gate with no tool and silent pass (no durable waiver) → false GO on real features.
-5. Claiming done on file tree only without Fixture A or strict V8.
-6. Non-git repo: install “succeeds,” then `/review`/worktrees fail on first real change.
-7. Lead spawns with `[gf-qa]` tag only → generic agent, no QA schema, gates theater.
-8. Nested markdown fence corruption → truncated skill/persona files that pass shallow “file exists” checks but break runtime.
-9. Project Test Commands left as bare TODO → targeted/regression skills have nothing to run.
-10. Double orchestration (`/implement` + post-change `/review` always, or concurrent skills) → token burn or contradictory skip rules.
-11. Chat-only waiver → next session loses merge authority.
-12. Phase 3 on this empty repo claims “accuracy gates operational” despite NONE unit/regression commands.
+1. Paraphrased skills pass shape checks but drop de-dupe/coverage rules.  
+2. Skills not in inspect → V8 fail ignored → false done.  
+3. V11 Approve or keyword-only report → false behavioral proof.  
+4. V11 faked without spawn in child session topology.  
+5. Unit NONE + waiver → claim accuracy_gates OPERATIONAL.  
+6. Tag-only QA spawn → no schema, invented coverage %.  
+7. Non-git COMPLETE without DEGRADED label.  
+8. Re-bootstrap clobbers human waivers or customs without backup.  
+9. Fence extract drops QA schema indent block.  
+10. V13 skipped → never prove fail-closed.  
+11. Chat-only waiver / expired waiver still used.  
+12. Roles treated as binding → wrong capability_mode.
 
 ---
 
-## Acceptance mapping (bootstrap §11 checklist)
+## Acceptance checklist
 
-- [ ] Phase 0 git check (or degraded mode documented); timestamped AGENTS backup; no `.grokbuild/`; no shadowed personas
-- [ ] `.grok/rules/accuracy-coverage.md` (gates + severity map + waiver pointer)
-- [ ] Four `gf-*` personas + non-empty instructions (read-verified)
-- [ ] Optional roles with “not spawn binding” note
-- [ ] Five skills with frontmatter + `disable-model-invocation: true`
-- [ ] Workflows + docs + coverage recipe hints
-- [ ] Fixtures + `docs/waivers/README.md`
-- [ ] AGENTS.md: pipeline, de-dupe, severity map, Project Test Commands (closed Phase 3)
-- [ ] Phase 4 V8 strict
-- [ ] Phase 4 V11 Fixture A pass
-- [ ] Handoff with incomplete flags if V8/V11 failed
-
----
-
-## Suggested execution prompt (for implementer)
-
-> Read `docs/plans/agentic-dev-team-template-bootstrap.md` and the source `grokbuild-agentic-dev-team-template-bootstrap.md` (v1.4). Implement Phases 0–5 in order. Prefer bootstrap section bodies for file content. Optimize for code accuracy, test accuracy, and coverage policy as written. Prefer bundled `/review`, `/check-work`, and `/implement`. Complete Phase 4 including **strict** `grok inspect --json` and **Fixture A** before claiming done. Do not treat file presence alone as success.
+- [ ] Phase 0 git mode + backups + re-run rules  
+- [ ] Phase 1 tree  
+- [ ] Phase 2 exact extracts for all map paths  
+- [ ] Phase 2.9 phrase checks  
+- [ ] Phase 3 commands closed + accuracy_gates  
+- [ ] V8 inspect artifact + five names  
+- [ ] V10 cold-review note  
+- [ ] V11 durable review + gold standards  
+- [ ] V13 dry-run artifact  
+- [ ] Phase 5 `docs/plans/bootstrap-handoff.md` with honest status  
 
 ---
 
-## Next steps after this plan
+## Suggested execution prompt
 
-1. Run **three cold reviews** of this plan (adversarial, fresh context).
-2. Revise plan if cold reviews find blocking gaps (especially V8/V11, Phase 3, extraction, git).
-3. Execute plan in the target repo (this workspace or a consumer product repo).
-4. After first product code lands, run Fixture B and C.
+> Read `docs/plans/agentic-dev-team-template-bootstrap.md` (Draft v2) and extract all file bodies from `grokbuild-agentic-dev-team-template-bootstrap.md` (v1.4) using the path↔section map. Do not paraphrase. Execute Phases 0–5. Save V8/V11/V13 artifacts and `docs/plans/bootstrap-handoff.md`. Set `accuracy_gates: NOT_OPERATIONAL` if Unit/Regression are not REAL. Claim COMPLETE only if V8, V11, V13, and content fidelity pass. Prefer bundled `/review`, `/check-work`, `/implement`. On Windows, use PowerShell-safe commands.
+
+---
+
+## Changelog (v1 → v2)
+
+| Change | Why (cold review) |
+|--------|-------------------|
+| Goal no longer claims bootstrap proves enforcement | R1 |
+| `bootstrap_status` + `accuracy_gates` enums | R1, R2, R3 |
+| Forbidden “verbatim in spirit”; extract map + 2.9 phrases | R2, R3 |
+| V8 saved artifact + strict fail | R1, R2 |
+| V11 gold standards, durable file, Approve=fail, spawn_used | R1, R3 |
+| V13 fail-closed targeted dry-run | R1 |
+| De-dupe operational definitions | R1 |
+| Re-run / backup / partial / rollback | R3 |
+| Waiver lifecycle + expiry re-arm | R3 |
+| Fixture B/C readiness criteria | R3 |
+| Spawn cookbook; roles not binding | R2 |
+| Windows/PowerShell notes | R2 |
+| COMPLETE ≠ OPERATIONAL explicit | All three |
