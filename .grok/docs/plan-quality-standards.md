@@ -14,6 +14,7 @@ Plans that fail hard gates must receive **Request Changes** or **Major Concerns*
 | 5 | **Testing strategy** | Unit scope + **at least one edge/negative case** per non-trivial behavior; coverage expectation (≥80% when Coverage command is real; else NO COVERAGE TOOL + waiver path). Name suites/paths when known. |
 | 6 | **Failure modes** | What can go wrong (partial deploy, bad data, auth miss, rollback). Ship-failure thinking required for production-touching work. |
 | 7 | **Observable verification** | Machine- or human-checkable checks. Reject “works correctly” / “should work” / “looks good”. |
+| 8 | **UI/UX design** *(conditional)* | Required when the plan touches UI surfaces (views, components, styling, user-facing states); otherwise record **N/A** (counts as pass). Must include: state inventory (empty/loading/error/disabled/focus), design reference (design system, tokens, mockup, or named existing pattern), a11y criteria (keyboard, focus, contrast, labels), and falsifiable design acceptance criteria per `.grok/docs/ui-design-standards.md`. Reject “looks good” / “modern UI”. |
 
 ## Soft gates (Request Changes if weak)
 
@@ -24,7 +25,7 @@ Plans that fail hard gates must receive **Request Changes** or **Major Concerns*
 
 ## Verdict rules
 
-- **Approve** — all hard gates satisfied; residual soft gaps are nits only.
+- **Approve** — all hard gates satisfied (1–7 always; 8 when the plan touches UI, else N/A); residual soft gaps are nits only.
 - **Request Changes** — one or more hard gates missing/weak; list Required Changes with severity `gap` / `risk` / `bug`.
 - **Major Concerns** — plan is unsafe to implement as-is (unbounded scope, non-observable success, production deploy without gates, invents product where none exists). Prefer this label for unsafe/unbounded plans.
 

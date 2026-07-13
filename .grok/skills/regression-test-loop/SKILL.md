@@ -48,7 +48,8 @@ while True:
   flakes: re-run failed subset up to 2 times for isolation only;
           if still flaky → quarantine in report with command + reason (do not silently ignore);
           isolation re-runs do not count as full cycles
-  if product bug: fix or hand back to implementer
+  if product bug: hand back to implementer/Lead with failing command (QA does not
+                  self-fix product code; test-only fixes disclosed under Self-applied fixes)
   # do not re-run full phase here — next iteration is the next full phase run
 ```
 

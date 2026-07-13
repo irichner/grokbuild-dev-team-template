@@ -13,7 +13,7 @@ disable-model-invocation: true
 
 If `/cold-review` appears in `grok inspect` for this workspace, prefer it for adversarial plan review.
 Still apply **hard gates** from `.grok/docs/plan-quality-standards.md` when interpreting cold-review output.
-**Same loop policy as this skill:** max **2** revise→re-review cycles; Approve bar = all 7 hard gates;
+**Same loop policy as this skill:** max **2** revise→re-review cycles; Approve bar = all applicable hard gates (1–7 always, 8 when UI touched);
 write durable review notes (e.g. `docs/plans/<name>.review.md` / `.review-2.md` or cold-review equivalent).
 This skill is the fallback when cold-review is missing or unresolved.
 
@@ -32,6 +32,7 @@ This skill is the fallback when cold-review is missing or unresolved.
 5. Testing strategy (unit + edge/negative + coverage expectation or NO COVERAGE TOOL + waiver path)  
 6. Failure modes  
 7. Observable verification (reject “works correctly” / “should work”)  
+8. UI/UX design when the plan touches UI — state inventory, design reference, a11y, falsifiable design criteria per `.grok/docs/ui-design-standards.md` (N/A counts as pass when no UI)  
 
 ## Loop (mandatory)
 

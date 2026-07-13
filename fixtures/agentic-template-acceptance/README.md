@@ -1,4 +1,4 @@
-# Acceptance fixtures (v1.5)
+# Acceptance fixtures (v1.6)
 
 ## A — Bad plan (mandatory for bootstrap complete)
 1. Copy `bad-plan.md` → `docs/plans/acceptance-bad-plan.md`
@@ -19,3 +19,8 @@
 1. Introduce a circular test (mock call-order only on SUT) or happy-path-only auth path
 2. Run `/targeted-unit-test-loop` with gf-qa
 3. **Pass:** accuracy NO-GO / gap even if pytest exit 0
+
+## E — Seeded design defect (post-install; needs frontend product code)
+1. Seed one defect per `seeded-design-defect-notes.md` on a throwaway branch (e.g. missing disabled/loading state, hardcoded off-token color, removed focus style, missing empty state)
+2. `/post-change-accuracy-protocol` — UI changed, so the UI verification step is required; judge must read `.grok/docs/ui-design-standards.md`
+3. **Pass:** design blocker filed as **gap** / NO-GO — never “done” with the defect in place and no waiver

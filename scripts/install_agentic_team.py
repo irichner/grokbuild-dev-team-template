@@ -22,7 +22,7 @@ from datetime import datetime, timezone
 from pathlib import Path
 from typing import Iterable
 
-TEMPLATE_VERSION = "1.5"
+TEMPLATE_VERSION = "1.6"
 
 EXPECTED_SKILLS = (
     "plan-review-loop",
@@ -39,6 +39,7 @@ EXPECTED_DOCS = (
     "coverage-policy.md",
     "privacy-safety.md",
     "plan-quality-standards.md",
+    "ui-design-standards.md",
 )
 
 # Relative paths under source that are always installable (walked as trees or files).
@@ -406,7 +407,7 @@ def scan_project_commands(target: Path) -> ScanResult:
             result.rows.append(
                 CommandRow(
                     "Coverage",
-                    f"`{cov_cmd}` (whole-package % is proxy for changed-line when diff-cover not installed)",
+                    f"`{cov_cmd}` (prefer diff-cover changed-line %, then changed-file proxy; whole-package % is weakest proxy — note which rung was used)",
                     "REAL",
                     cov_ev,
                 )

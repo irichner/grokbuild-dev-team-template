@@ -1,8 +1,8 @@
 # GrokForge Agentic Dev Team Template
 
-**Template version:** 1.5
+**Template version:** 1.6
 
-Bootstrap config for a Grok-native agentic software team (accuracy, tests, coverage, plan-quality loops), plus a **TaskBoard** sample app used to exercise the team.
+Bootstrap config for a Grok-native agentic software team (accuracy, tests, coverage, plan-quality loops, UI design gates), plus a **TaskBoard** sample app used to exercise the team.
 
 ## Install into another project
 
@@ -44,7 +44,7 @@ Optional Grok skill: `/install-agentic-team` (runs the same script).
 | `scripts/install_agentic_team.py` | Install config into another project |
 | `docs/plans/` | Plans + bootstrap verification artifacts |
 | `docs/waivers/` | Durable gate waivers |
-| `fixtures/agentic-template-acceptance/` | Acceptance fixtures A/B/C (+ optional D) |
+| `fixtures/agentic-template-acceptance/` | Acceptance fixtures A/B/C (+ optional D, E) |
 | `src/taskboard/` | **Test application** for agents to extend |
 | `tests/` | Pytest suite |
 
@@ -77,6 +77,8 @@ Suggested agent pipeline:
 3. `/post-change-accuracy-protocol` (targeted → review → regression → check-work; max 3 cycles)  
 
 v1.5 strengthens plan hard gates (`.grok/docs/plan-quality-standards.md`), fix→re-test loops in QA skills, and implementer done criteria.
+
+v1.6 adds the UI design pillar and accuracy tightening: `.grok/docs/ui-design-standards.md` (mandatory read for `gf-frontend`), plan hard gate 8 (UI/UX design when UI is touched), a UI verification step in the post-change protocol, Fixture E (seeded design defect), a lint/typecheck gate in the targeted loop, changed-line coverage via diff-cover, QA independence (test-only fixes, disclosed; product fixes hand back), and a conditional security pass (auth/secrets/payments/untrusted input).
 
 ## Bootstrap status
 

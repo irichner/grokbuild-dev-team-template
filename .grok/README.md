@@ -1,6 +1,6 @@
-# GrokForge project template (v1.5)
+# GrokForge project template (v1.6)
 
-Grok-native paths only. Optimized for **accuracy + coverage** with explicit revise/retry loops.
+Grok-native paths only. Optimized for **accuracy + coverage + UI design quality** with explicit revise/retry loops.
 
 ## What loads automatically
 
@@ -11,7 +11,7 @@ Grok-native paths only. Optimized for **accuracy + coverage** with explicit revi
 | `.grok/skills/*/SKILL.md` | Yes (skills / slash commands) |
 | `.grok/personas/*.toml` | Yes (persona **catalog only**; spawn needs instruction **prepend**) |
 | `.grok/roles/*.toml` | Catalog defaults when resolution applies — **skills must still set capability_mode and prepend instructions** |
-| `.grok/docs/*`, `.grok/workflows/*` | **No** — reference only (plan-quality + test-accuracy standards: **mandatory `read_file`** for reviewers/QA) |
+| `.grok/docs/*`, `.grok/workflows/*` | **No** — reference only (plan-quality + test-accuracy + ui-design standards: **mandatory `read_file`** for reviewers/QA/frontend) |
 
 ## Prefer bundled skills
 
@@ -22,9 +22,9 @@ Grok-native paths only. Optimized for **accuracy + coverage** with explicit revi
 - `/create-skill` — capture new skills  
 - `/plan`, `/view-plan` — Plan Mode  
 
-Project skills add plan-review (hard gates + max 2 passes), targeted/regression testing (max 3 fix cycles), coverage gates, and the post-change protocol (max 3 full cycles).
+Project skills add plan-review (hard gates + max 2 passes), targeted/regression testing (max 3 fix cycles), coverage + lint gates, UI design gate + verification (`.grok/docs/ui-design-standards.md`), and the post-change protocol (max 3 full cycles).
 
-## Accuracy loops (v1.5)
+## Accuracy loops (v1.6)
 
 | Skill / phase | Loop | Cap |
 |---------------|------|-----|

@@ -1,7 +1,10 @@
 # Coverage Policy
 
 - Default gate: **≥ 80%** new/changed executable lines when Coverage command is real in AGENTS.md.
-- Proxy: changed-file % if line-level unavailable (note limitation in QA report).
+- Measurement ladder — record which rung was used in the QA report:
+  1. **changed-line %** via diff-cover or equivalent (preferred; the template repo installs `diff-cover` in dev deps)
+  2. **changed-file %** proxy (files touched must meet threshold or be listed as gaps)
+  3. **whole-package %** — weakest; only with an explicit limitation note
 - No tool: `NO COVERAGE TOOL` → durable waiver in `docs/waivers/` or add tooling before merge.
 - Never invent percentages; use UNMEASURED if the tool ran but delta cannot be computed.
 - Recipe hints (adapt to repo):

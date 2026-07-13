@@ -1,8 +1,9 @@
 ---
 name: targeted-unit-test-loop
 description: >
-  Fast unit tests on changed code with coverage delta, test-accuracy checks,
-  and fix→re-test loop (max 3 full suite runs). Use after implementation or /targeted-unit-test-loop.
+  Fast unit tests on changed code with coverage delta, lint/typecheck gate,
+  test-accuracy checks, and fix→re-test loop (max 3 full suite runs).
+  Use after implementation or /targeted-unit-test-loop.
 disable-model-invocation: true
 ---
 
@@ -21,7 +22,7 @@ disable-model-invocation: true
 
 ## Steps
 
-1. Read AGENTS.md Project Test Commands. If Unit is TODO/NONE without waiver → **NO-GO**.  
+1. Read AGENTS.md Project Test Commands. If Unit is TODO/NONE without waiver → **NO-GO**. Resolve Lint / typecheck command too (part of GO when real).  
 2. List changed files (`git status` / `git diff --name-only` when git exists).  
 3. Map to tests (in order): plan Testing Strategy paths → colocated tests → smallest module suite that covers changed packages. Record selection rule used.  
 4. Enter **fix → re-test loop** (below).  
@@ -38,22 +39,30 @@ MAX = 3
 while True:
   cycle += 1
   run unit command once (selected paths when supported; else full unit suite with scope note)
-  if Coverage command is real: measure changed-line % or changed-file proxy; never invent numbers
+  run Lint / typecheck command when real; capture exit code
+  if Coverage command is real: measure per the coverage ladder below; never invent numbers
   accuracy pass per test-accuracy-standards.md
-  if tests exit 0 AND accuracy pass AND (coverage gate met OR durable waiver OR NO COVERAGE TOOL noted):
+  if tests exit 0 AND lint/typecheck exit 0 (when real) AND accuracy pass
+     AND (coverage gate met OR durable waiver OR NO COVERAGE TOOL noted):
     Recommendation: GO
     break
   if cycle >= MAX:
     triage notes for escalate (product vs test vs flake vs env)
     Recommendation: NO-GO; escalate with QA report + failing commands
     break   # no 4th run; no further fix commitment
-  triage failures; apply fix or hand back to implementer
+  triage failures:
+  - product bug → hand back to implementer/Lead with failing command (QA does not self-fix product code)
+  - inaccurate test → QA may fix the test without weakening assertions; disclose under Self-applied fixes
   # do not re-run here — next iteration is the next full suite run
 ```
 
 ### Coverage gate
 
 - **≥ 80%** when tool exists and measured.  
+- Measurement ladder — record which rung was used:  
+  1. changed-line % (diff-cover or equivalent) — preferred  
+  2. changed-file % proxy  
+  3. whole-package % — weakest; only with explicit limitation note  
 - Else `NO COVERAGE TOOL` / `UNMEASURED` — record explicitly; merge needs durable waiver if Coverage was expected.
 
 ### Accuracy blockers (NO-GO regardless of green exit)
@@ -66,7 +75,7 @@ while True:
 
 | Result | Condition |
 |--------|-----------|
-| **GO** | Tests exit 0; accuracy pass; coverage gate met **or** durable waiver **or** NO COVERAGE TOOL recorded |
-| **NO-GO** | Failures after 3 full suite runs, accuracy blockers, or missing unit command without waiver |
+| **GO** | Tests exit 0; lint/typecheck exit 0 (when command real); accuracy pass; coverage gate met **or** durable waiver **or** NO COVERAGE TOOL recorded |
+| **NO-GO** | Failures after 3 full suite runs, lint/typecheck failures, accuracy blockers, or missing unit command without waiver |
 
 Max **3** full suite runs (AGENTS.md). Do not claim targeted PASS without a real run this session.

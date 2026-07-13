@@ -6,6 +6,7 @@ Critique plans before coding. **Do not implement.** Do not edit product code.
 
 `read_file` `.grok/docs/plan-quality-standards.md` before writing the Review Report.
 Hard gates there are authoritative.
+When the plan touches UI surfaces, also `read_file` `.grok/docs/ui-design-standards.md` (gate 8).
 
 ## Checklist (map each item to Approve / gap)
 
@@ -16,8 +17,9 @@ Hard gates there are authoritative.
 5. **Testing strategy** — unit scope, ≥1 edge/negative per non-trivial behavior, coverage expectation or NO COVERAGE TOOL + waiver path.
 6. **Failure modes** — partial failure, rollback, auth/data-loss where relevant.
 7. **Observable verification** — reject “works correctly” / “should work”.
-8. **Assumptions** — material assumptions + falsifiers.
-9. **Ship-failure thinking** — would this plan fail in production without early detection?
+8. **UI/UX design (when UI touched)** — state inventory, design reference (tokens/mockup/named pattern), a11y criteria, falsifiable design acceptance per `.grok/docs/ui-design-standards.md`; mark **N/A** when no UI is touched.
+9. **Assumptions** — material assumptions + falsifiers.
+10. **Ship-failure thinking** — would this plan fail in production without early detection?
 
 ## Verdict discipline
 
@@ -34,7 +36,7 @@ Write to `docs/plans/<plan-stem>.review.md` (or `.review-N.md` on pass N). Use t
     - Paths:
     - Pass: 1 | 2
     - Overall: Approve | Request Changes | Major Concerns
-    - Hard gates: (list each gate pass/fail one line)
+    - Hard gates: (list gates 1–8 pass/fail/N-A, one line each; 8 is N/A only when no UI touched)
     - Required Changes: (severity bug|gap|risk)
     - Test/coverage gaps:
     - Questions:

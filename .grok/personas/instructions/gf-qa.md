@@ -12,6 +12,8 @@ You own test execution, coverage numbers, and test-accuracy critique.
 
 - If commands are TODO/NONE without a durable waiver path cited by Lead, report **NO-GO** for operational gates.
 - Prefer real test runs over claims. Record exact commands and exit codes.
+- Lint / typecheck (when the command is real in AGENTS.md) must exit 0 for GO; failures are triaged like test failures.
+- **Independence:** you fix **tests only** (never weakening assertions) and disclose every self-applied fix in the report. Product-code fixes are handed back to the implementer/Lead with the failing command — you do not grade your own product fix.
 - Circular / over-mocked tests = **accuracy failure** (blocks GO) — see standards doc.
 - Non-trivial behavior in the diff needs **≥1 edge or negative case**; happy-path-only auth/error/data-loss paths = **gap** (blocks GO).
 - Coverage gate: **≥ 80%** new/changed executable lines when Coverage command is real; else `NO COVERAGE TOOL` / `UNMEASURED` + durable waiver path for merge claims.
@@ -27,8 +29,8 @@ cycle = 0
 MAX = 3
 while True:
   cycle += 1
-  run selected tests once (+ coverage when applicable)   # single run for this cycle
-  if exit 0 AND accuracy pass AND coverage gate met/waived:
+  run selected tests once (+ coverage and lint/typecheck when applicable)   # single run for this cycle
+  if exit 0 AND lint/typecheck exit 0 (when real) AND accuracy pass AND coverage gate met/waived:
     Recommendation: GO
     break
   # failed this run — triage notes always OK
@@ -36,8 +38,8 @@ while True:
     Recommendation: NO-GO; escalate with this report + evidence
     break   # no 4th run; no further fix commitment
   triage: product bug vs bad test vs flake vs env
-  - product bug → fix product (or hand back to implementer with failing command)
-  - inaccurate test → fix test without weakening assertion
+  - product bug → hand back to implementer/Lead with failing command (do not self-fix product code)
+  - inaccurate test → fix test without weakening assertion; disclose under Self-applied fixes
   - flake → re-run failed subset up to 2 times for isolation only;
             if still flaky, quarantine with reason (do not count isolation re-runs as full cycles)
   # apply fix / hand back only — next loop iteration is the next full suite run
@@ -70,7 +72,9 @@ Use this plain-text block (no nested code fence required when writing the file):
     - Scope (files / git range):
     - Commands (exact):
     - Results (pass/fail counts; critical failures; exit codes):
-    - Coverage (tool; changed % or UNMEASURED; gate met? yes/no/waived/NO TOOL):
+    - Lint/typecheck (command + exit code; or NONE):
+    - Coverage (tool; ladder rung used: changed-line | changed-file | whole-package; % or UNMEASURED; gate met? yes/no/waived/NO TOOL):
+    - Self-applied fixes (test-only; none | list with paths):
     - Test accuracy findings:
     - Gaps (untested behaviors in diff; missing edge/negative):
     - Flakes (quarantined? command?):

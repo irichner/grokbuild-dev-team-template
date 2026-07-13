@@ -8,7 +8,9 @@
 3. Regression Quick (or Extended when required): **pass**.  
 4. Coverage ≥ 80% on new/changed executable lines when Coverage command is real in AGENTS.md; else `NO COVERAGE TOOL` + durable waiver.  
 5. `/check-work` → `VERDICT: PASS` for claimed session work (session adequacy; not coverage %).  
-6. **Plan quality** (when a plan was required): Approve from `/plan-review-loop` or `/cold-review`, or durable waiver for residual hard-gate failures (any Overall other than Approve) — see `.grok/docs/plan-quality-standards.md` (all **7** hard gates).
+6. **Plan quality** (when a plan was required): Approve from `/plan-review-loop` or `/cold-review`, or durable waiver for residual hard-gate failures (any Overall other than Approve) — see `.grok/docs/plan-quality-standards.md` (hard gates 1–7 always; gate **8 UI/UX design** when the plan touches UI).  
+7. **Lint / typecheck**: exit 0 when the Lint command is real in AGENTS.md (checked inside the targeted loop).  
+8. **UI design**: when UI surfaces changed — no blockers per `.grok/docs/ui-design-standards.md`; UI verification evidence recorded in the protocol (or `NO UI TOOLING` + waiver path).
 
 ## Severity map
 
@@ -16,7 +18,8 @@
 - `/review` suggestion on tests/correctness/security/data-loss → gap → block  
 - nit / pure style suggestion → non-blocking  
 - QA circular or happy-path-only auth/error tests → gap → block  
-- Plan missing **any of the 7 hard gates** in `.grok/docs/plan-quality-standards.md` → do not implement until revised (or durable waiver after max 2 review passes)  
+- UI design blocker per `.grok/docs/ui-design-standards.md` → gap → block  
+- Plan missing **any applicable hard gate** (1–7 always; 8 when UI touched) in `.grok/docs/plan-quality-standards.md` → do not implement until revised (or durable waiver after max 2 review passes)  
 
 ## Fix / revise loops (aligned max cycles)
 
@@ -34,8 +37,15 @@ After max cycles: escalate with QA report + review paths + waiver proposals. **D
 - Prefer tests that fail when the bug returns.  
 - Non-trivial behavior needs at least one edge/negative case.  
 - Reject tests that only assert mock call order of the SUT.  
+- **QA independence:** QA fixes tests only (never weakening assertions) and discloses self-applied fixes in the QA report; product-code fixes hand back to the implementer/Lead.  
 - Full text: `.grok/docs/test-accuracy-standards.md` — QA **must** `read_file` this during targeted loop.  
-- Plan hard gates: `.grok/docs/plan-quality-standards.md` — plan reviewer **must** `read_file` during plan critique.
+- Plan hard gates: `.grok/docs/plan-quality-standards.md` — plan reviewer **must** `read_file` during plan critique.  
+- UI design standards: `.grok/docs/ui-design-standards.md` — `gf-frontend` and UI verification **must** `read_file` when UI is in scope.
+
+## Security pass
+
+Diff touches auth, secrets handling, payments, or untrusted input parsing → run bundled
+security review (`security-auditor`) before merge; findings map via the severity map above.
 
 ## Implementer done bar
 

@@ -200,10 +200,10 @@ def test_agents_backup_on_existing(inst, tmp_path: Path) -> None:
     assert "custom lead rules" in backups[0].read_text(encoding="utf-8")
 
 
-def test_template_version_is_1_5(inst) -> None:
-    assert inst.TEMPLATE_VERSION == "1.5"
+def test_template_version_is_1_6(inst) -> None:
+    assert inst.TEMPLATE_VERSION == "1.6"
     agents = (REPO_ROOT / "AGENTS.md").read_text(encoding="utf-8")
-    assert "Template Version:** 1.5" in agents
+    assert "Template Version:** 1.6" in agents
 
 
 def test_install_includes_plan_quality_and_loop_assets(inst, tmp_path: Path) -> None:
@@ -215,6 +215,7 @@ def test_install_includes_plan_quality_and_loop_assets(inst, tmp_path: Path) -> 
     assert report.verify_ok is True
     assert (target / ".grok" / "docs" / "plan-quality-standards.md").is_file()
     assert (target / ".grok" / "docs" / "test-accuracy-standards.md").is_file()
+    assert (target / ".grok" / "docs" / "ui-design-standards.md").is_file()
     for name in ("gf-qa.md", "gf-plan-reviewer.md", "gf-backend.md", "gf-frontend.md"):
         assert (target / ".grok" / "personas" / "instructions" / name).is_file()
     plan_skill = (
@@ -242,3 +243,44 @@ def test_verify_fails_when_plan_quality_doc_missing(inst, tmp_path: Path) -> Non
     ok = inst.verify_install(target, report)
     assert ok is False
     assert any("plan-quality-standards.md" in e for e in report.errors)
+
+
+def test_install_includes_ui_design_assets(inst, tmp_path: Path) -> None:
+    target = tmp_path / "proj"
+    target.mkdir()
+    _git_init(target)
+    report = inst.install(REPO_ROOT, target, verify=True)
+    assert not report.errors
+    ui_doc = target / ".grok" / "docs" / "ui-design-standards.md"
+    assert ui_doc.is_file()
+    assert "Blockers" in ui_doc.read_text(encoding="utf-8")
+    fixture_e = (
+        target / "fixtures" / "agentic-template-acceptance" / "seeded-design-defect-notes.md"
+    )
+    assert fixture_e.is_file()
+    frontend = (
+        target / ".grok" / "personas" / "instructions" / "gf-frontend.md"
+    ).read_text(encoding="utf-8")
+    assert "ui-design-standards.md" in frontend
+    protocol = (
+        target / ".grok" / "skills" / "post-change-accuracy-protocol" / "SKILL.md"
+    ).read_text(encoding="utf-8")
+    assert "UI verification" in protocol
+    plan_std = (
+        target / ".grok" / "docs" / "plan-quality-standards.md"
+    ).read_text(encoding="utf-8")
+    assert "UI/UX design" in plan_std
+    agents = (target / "AGENTS.md").read_text(encoding="utf-8")
+    assert "ui-design-standards.md" in agents
+
+
+def test_verify_fails_when_ui_design_doc_missing(inst, tmp_path: Path) -> None:
+    target = tmp_path / "proj"
+    target.mkdir()
+    _git_init(target)
+    inst.install(REPO_ROOT, target)
+    (target / ".grok" / "docs" / "ui-design-standards.md").unlink()
+    report = inst.InstallReport()
+    ok = inst.verify_install(target, report)
+    assert ok is False
+    assert any("ui-design-standards.md" in e for e in report.errors)
