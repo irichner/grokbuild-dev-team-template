@@ -19,11 +19,11 @@ Write `docs/plans/<feature>-contract.md` (or section in the plan) containing:
 - Freeze stamp (date + “no divergent fields without re-freeze”)
 
 ## Steps
-1. Plan Mode + plan critique (`/cold-review` or `/plan-review-loop`). Freeze contract artifact.
+1. Plan Mode + plan critique (`/cold-review` or `/plan-review-loop` with plan-quality hard gates; max 2 review passes). Freeze contract artifact.
 2. Prefer `/implement` for sequential high-rigor work when parallelism is unnecessary.
-3. If parallel: spawn `gf-backend` and `gf-frontend` with `isolation: worktree`, **prepend** persona instructions, tags `[gf-backend]` / `[gf-frontend]`, capability_mode `all`.
+3. If parallel: spawn `gf-backend` and `gf-frontend` with `isolation: worktree`, **prepend** persona instructions, tags `[gf-backend]` / `[gf-frontend]`, capability_mode `all`. Each specialist follows Done criteria (green targeted tests when shell available).
 4. Integrate via Grok **worktree apply** (or explicit merge); resolve conflicts; re-check contract artifact for drift.
-5. Run **`/post-change-accuracy-protocol`** on integrated tree.
+5. Run **`/post-change-accuracy-protocol`** on integrated tree (targeted → review → regression → check-work; max 3 protocol cycles).
 6. Lead-only spawns throughout (depth 1).
 
 ## Failure

@@ -1,9 +1,9 @@
-# Acceptance fixtures (v1.4)
+# Acceptance fixtures (v1.5)
 
 ## A — Bad plan (mandatory for bootstrap complete)
 1. Copy `bad-plan.md` → `docs/plans/acceptance-bad-plan.md`
 2. `/plan-review-loop` or `/cold-review` if available
-3. **Pass:** Request Changes / Major Concerns; mentions verification or testing gaps
+3. **Pass:** Request Changes / Major Concerns; must cite plan-quality hard gates (acceptance criteria, observable verification, testing strategy / edge cases, blast radius). Weak plans must not Approve.
 
 ## B — Seeded bug (post-install; needs product code)
 1. Plant bug per `seeded-bug-notes.md` on a throwaway branch
@@ -14,3 +14,8 @@
 1. New untested branch in code
 2. Targeted loop with coverage
 3. **Pass:** NO-GO or gate fail without waiver
+
+## D — Test accuracy (optional harness check)
+1. Introduce a circular test (mock call-order only on SUT) or happy-path-only auth path
+2. Run `/targeted-unit-test-loop` with gf-qa
+3. **Pass:** accuracy NO-GO / gap even if pytest exit 0

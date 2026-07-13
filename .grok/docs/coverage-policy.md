@@ -10,3 +10,4 @@
   - Go: go test -coverprofile + go tool cover
 - Waivers: scope, residual risk, follow-up, expiry.
 - Not a substitute for test accuracy or `/review`.
+- Targeted loop must record coverage gate met / waived / NO TOOL each cycle (see `/targeted-unit-test-loop`).

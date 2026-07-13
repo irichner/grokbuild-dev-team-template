@@ -1,6 +1,6 @@
-# GrokForge project template (v1.4)
+# GrokForge project template (v1.5)
 
-Grok-native paths only. Optimized for **accuracy + coverage**.
+Grok-native paths only. Optimized for **accuracy + coverage** with explicit revise/retry loops.
 
 ## What loads automatically
 
@@ -11,7 +11,7 @@ Grok-native paths only. Optimized for **accuracy + coverage**.
 | `.grok/skills/*/SKILL.md` | Yes (skills / slash commands) |
 | `.grok/personas/*.toml` | Yes (persona **catalog only**; spawn needs instruction **prepend**) |
 | `.grok/roles/*.toml` | Catalog defaults when resolution applies — **skills must still set capability_mode and prepend instructions** |
-| `.grok/docs/*`, `.grok/workflows/*` | **No** — reference only |
+| `.grok/docs/*`, `.grok/workflows/*` | **No** — reference only (plan-quality + test-accuracy standards: **mandatory `read_file`** for reviewers/QA) |
 
 ## Prefer bundled skills
 
@@ -22,7 +22,16 @@ Grok-native paths only. Optimized for **accuracy + coverage**.
 - `/create-skill` — capture new skills  
 - `/plan`, `/view-plan` — Plan Mode  
 
-Project skills add plan-review fallback, targeted/regression testing, coverage gates, and the post-change protocol.
+Project skills add plan-review (hard gates + max 2 passes), targeted/regression testing (max 3 fix cycles), coverage gates, and the post-change protocol (max 3 full cycles).
+
+## Accuracy loops (v1.5)
+
+| Skill / phase | Loop | Cap |
+|---------------|------|-----|
+| `/plan-review-loop` or `/cold-review` | revise → re-review | 2 passes |
+| `/targeted-unit-test-loop` | fix → re-test (1 full suite run/cycle) | 3 full suite runs |
+| `/regression-test-loop` | fix → re-test (1 full phase run/cycle) | 3 full phase runs |
+| `/post-change-accuracy-protocol` | full protocol retry | 3 cycles |
 
 ## Git required for full protocol
 
