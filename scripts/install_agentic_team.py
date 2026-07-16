@@ -910,7 +910,11 @@ def verify_install(target: Path, report: InstallReport) -> bool:
             report.errors.append(f"Missing persona instructions: {persona}")
             ok = False
 
-    # Optional grok inspect
+    # Optional grok inspect + host skill probe note
+    report.warnings.append(
+        "Host skills /review, /check-work, /implement are not vendored by this installer; "
+        "protocol must record HOST_SKILLS=OK|PARTIAL (never silent-skip)."
+    )
     try:
         r = subprocess.run(
             ["grok", "inspect", "--json"],
@@ -922,8 +926,15 @@ def verify_install(target: Path, report: InstallReport) -> bool:
         )
         if r.returncode == 0 and r.stdout.strip():
             try:
-                json.loads(r.stdout)
+                payload = json.loads(r.stdout)
                 report.warnings.append("grok inspect ran successfully (see CLI for skill list)")
+                blob = json.dumps(payload).lower()
+                for name in ("review", "check-work", "implement"):
+                    if name not in blob and name.replace("-", "") not in blob.replace("-", ""):
+                        report.warnings.append(
+                            f"Host skill probe: '{name}' not obviously present in grok inspect output "
+                            f"— treat as HOST_SKILLS=PARTIAL until confirmed"
+                        )
             except json.JSONDecodeError:
                 report.warnings.append("grok inspect returned non-JSON; skipped parse")
         else:
@@ -1020,8 +1031,13 @@ def install(
                     else:
                         hooks_script = target / "scripts" / "install_git_hooks.py"
                         if hooks_script.is_file():
+                            # Pass --force only when installer --force is set; otherwise
+                            # install_git_hooks refuses to clobber a divergent existing hook.
+                            cmd = [sys.executable, str(hooks_script), "--root", str(target)]
+                            if force and hook_dest.is_file():
+                                cmd.append("--force")
                             hr = subprocess.run(
-                                [sys.executable, str(hooks_script), "--root", str(target)],
+                                cmd,
                                 capture_output=True,
                                 text=True,
                                 timeout=60,

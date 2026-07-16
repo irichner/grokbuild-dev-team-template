@@ -49,7 +49,10 @@ Earlier bootstrap passes (V8 inspect, Fixture A Major Concerns, V13 fail-closed 
 - Always set `capability_mode` on spawn (see `.grok/rules/spawn.md`)  
 - Roles are optional catalog metadata — not spawn binding  
 - Lead-only spawn (depth 1)  
-- Implement de-dupe skips **`/review` only**, never targeted QA / security / regression / UI / check-work  
+- Implement de-dupe skips **`/review` only** when **bugs=0 and gaps=0** + tree match; never skip targeted QA / security / regression / UI / check-work  
+- Product-bug QA path: `WAITING_ON_PRODUCT` — do not burn the 3-run budget on unfixed product  
+- Host `/review` `/check-work` `/implement` not vendored — record `HOST_SKILLS=OK|PARTIAL`  
+- Operator docs primary path: `docs/USER_GUIDE.md` (GrokForge); Claude stack is optional sibling  
 - Record tokens/models in the ledger when known  
 
 ## Next steps

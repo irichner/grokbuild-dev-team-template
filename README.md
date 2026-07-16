@@ -76,7 +76,7 @@ python -m diff_cover.diff_cover_tool coverage.xml --compare-branch=origin/main -
 # vacuous "no lines in this diff" => UNMEASURED / no changed lines — not 100%
 
 # lint
-python -m ruff check src tests
+python -m ruff check src tests scripts
 ```
 
 ### Feature for agents to build

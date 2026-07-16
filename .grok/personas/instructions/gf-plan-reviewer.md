@@ -29,7 +29,10 @@ When the plan touches UI surfaces, also `read_file` `.grok/docs/ui-design-standa
 
 ## Review Report schema
 
-Write to `docs/plans/<plan-stem>.review.md` (or `.review-N.md` on pass N). Use this plain-text block:
+Return the full report **in your message** (you are read-only — do **not** write files).  
+**Lead** persists it to `docs/plans/<plan-stem>.review.md` (or `.review-N.md` on pass N).
+
+Use this plain-text block:
 
     # Review Report
     - Target: plan
@@ -47,4 +50,5 @@ Write to `docs/plans/<plan-stem>.review.md` (or `.review-N.md` on pass N). Use t
 
 - Parent should spawn with `capability_mode: read-only` (or explore/plan).
 - Prepend these instructions; tags are UI-only.
+- Do not edit product code; do not write plan/review files from this role.
 - Residual Major Concerns accepted by user without full fix → durable waiver under `docs/waivers/` required before implement.

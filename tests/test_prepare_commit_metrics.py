@@ -116,6 +116,44 @@ def test_prepare_requires_metrics_without_fallback(mod, tmp_path: Path) -> None:
         mod.main(["--root", str(root)])  # no --from-env, no metrics
 
 
+def test_prepare_bad_token_env_exits_clearly(mod, tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+    root = tmp_path / "proj"
+    root.mkdir()
+    (root / "VERSION").write_text("0.1.0\n", encoding="utf-8")
+    monkeypatch.setenv("GROK_MODEL", "grok-build")
+    monkeypatch.setenv("GROK_INPUT_TOKENS", "abc")
+    monkeypatch.setenv("GROK_OUTPUT_TOKENS", "10")
+    with pytest.raises(SystemExit) as ei:
+        mod.main(["--root", str(root), "--from-env"])
+    msg = str(ei.value)
+    assert "invalid integer" in msg.lower() or "INPUT" in msg or "abc" in msg
+
+
+def test_unmeasured_ignores_garbage_token_env(mod, tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+    root = tmp_path / "proj"
+    root.mkdir()
+    (root / "VERSION").write_text("0.1.0\n", encoding="utf-8")
+    monkeypatch.setenv("GROK_INPUT_TOKENS", "abc")
+    monkeypatch.setenv("GROK_OUTPUT_TOKENS", "xyz")
+    rc = mod.main(["--root", str(root), "--unmeasured", "--note", "ignore garbage"])
+    assert rc == 0
+
+
+def test_prepare_bad_pending_file_int(mod, tmp_path: Path) -> None:
+    root = tmp_path / "proj"
+    root.mkdir()
+    (root / "VERSION").write_text("0.1.0\n", encoding="utf-8")
+    metrics = root / "docs" / "metrics"
+    metrics.mkdir(parents=True)
+    (metrics / "pending-commit.env").write_text(
+        "MODEL=grok-build\nINPUT=not-a-number\nOUTPUT=5\n",
+        encoding="utf-8",
+    )
+    with pytest.raises(SystemExit) as ei:
+        mod.main(["--root", str(root), "--from-env"])
+    assert "invalid integer" in str(ei.value).lower() or "not-a-number" in str(ei.value)
+
+
 def test_bump_patch_helpers() -> None:
     scripts = str(REPO_ROOT / "scripts")
     if scripts not in sys.path:

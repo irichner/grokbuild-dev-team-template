@@ -22,7 +22,8 @@ Auto-loaded spawn rules: `.grok/rules/spawn.md`. Accuracy gates: `.grok/rules/ac
 
 ### Implement vs `/review` de-dupe
 
-- After clean `/implement` (zero open bugs, tree unchanged): skip **`/review` only**; record reason.  
+- After clean `/implement` (**zero open bugs and zero gate-mapped gaps**, tree matches implement scope — record `git status --porcelain` / path list): skip **`/review` only**; record reason e.g. `Review: SKIPPED (implement clean; bugs=0; gaps=0; tree=<note>)`.  
+- Gate-mapped **gaps** include review suggestions on missing tests / correctness / security / data loss (severity map). If implement artifact is missing or unclear → **do not de-dupe**; run `/review`.  
 - **Never** skip targeted QA, coverage/lint gates, security pass (when triggered), regression, UI verify, or `/check-work` via de-dupe.  
 - After manual/`gf-*` implement, dirty implement, or user request: run `/review`.
 
@@ -128,5 +129,5 @@ Durable only: `docs/waivers/<name>.md` (see `docs/waivers/README.md`). Chat is n
 - **Unit tests:** `python -m pytest tests/ -q`
 - **Coverage:** `python -m pytest tests/ --cov=taskboard --cov-report=term-missing --cov-report=xml` then `python -m diff_cover.diff_cover_tool coverage.xml --compare-branch=origin/main --fail-under=80` (fallback compare: `main` if `origin/main` missing; vacuous “no lines in this diff” = UNMEASURED / no changed lines — not 100%. Whole-package `fail_under = 80` in pyproject is backstop.)
 - **Regression / full suite:** `python -m pytest tests/ -q`
-- **Lint:** `python -m ruff check src tests`
+- **Lint:** `python -m ruff check src tests scripts`
 <!-- END PROJECT_TEST_COMMANDS -->

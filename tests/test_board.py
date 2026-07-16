@@ -57,6 +57,44 @@ def test_set_priority_and_remove():
     assert board.count() == 0
 
 
+def test_set_priority_clamps():
+    board = TaskBoard()
+    t = board.add("x", priority=5)
+    board.set_priority(t.id, -3)
+    assert board.get(t.id).priority == 0
+    board.set_priority(t.id, 99)
+    assert board.get(t.id).priority == 10
+
+
+def test_set_priority_unknown():
+    board = TaskBoard()
+    with pytest.raises(KeyError):
+        board.set_priority("missing", 3)
+
+
+def test_get_missing_returns_none():
+    board = TaskBoard()
+    assert board.get("no-such-id") is None
+
+
+def test_list_empty_board():
+    board = TaskBoard()
+    assert board.list() == []
+
+
+def test_add_empty_title_rejected():
+    board = TaskBoard()
+    with pytest.raises(ValueError):
+        board.add("   ")
+
+
+def test_list_filter_in_progress():
+    board = TaskBoard()
+    t = board.add("wip")
+    board.set_status(t.id, TaskStatus.IN_PROGRESS)
+    assert [x.id for x in board.list(status=TaskStatus.IN_PROGRESS)] == [t.id]
+
+
 def test_empty_title_rejected():
     with pytest.raises(ValueError):
         Task(title="   ")
