@@ -15,19 +15,21 @@ disable-model-invocation: true
 1. **Targeted Unit Test Loop** (`/targeted-unit-test-loop`) — must be **GO** (or waived) before continuing when executable code/tests/SQL/runtime config changed. Implementer **Ready:yes** is not a substitute: green exit is necessary, not sufficient; this step still judges test accuracy.  
 
 2. **Code review** — apply implement/review de-dupe from AGENTS.md:  
-   - Clean `/implement` + zero open bugs + tree matches → **SKIP** `/review` and record reason  
+   - Clean `/implement` + zero open bugs + tree matches → **SKIP `/review` only** and record reason  
+   - **De-dupe never skips** targeted QA, coverage/lint, security, regression, UI verify, or `/check-work`  
    - Else run bundled **`/review`** (optional `/code-review` for maintainability)  
    - **Security pass (conditional, not covered by de-dupe):** diff touches auth, secrets handling, payments, or untrusted input parsing → also run bundled security review (`security-auditor`); findings map per severity gates  
    - Open **bug** or gate-mapped **gap** → fix → resume from step 1 or 2 as appropriate  
 3. **Regression Test Loop** (`/regression-test-loop`) — must be **GO** (or waived).  
-4. **UI verification (conditional)** — when the diff touches UI surfaces (views, components, styling, user-facing states):  
+4. **UI verification (conditional)** — when the diff touches UI surfaces (views, components, styling, user-facing states, including fixture sample UI):  
    - `read_file` `.grok/docs/ui-design-standards.md` first; its Blockers list is authoritative  
-   - Verify the rendered UI against the plan’s design criteria (gate 8) with **observable evidence**: run the app / story per state / browser E2E (e.g. Playwright) and capture key-state screenshots (empty/loading/error/disabled/focus)  
-   - No UI tooling available → record `NO UI TOOLING` + manual checks performed; merge claims then need waiver discipline like `NO COVERAGE TOOL`  
+   - Verify against the plan’s design criteria (gate 8) with **observable evidence**  
+   - No UI tooling → record `NO UI TOOLING` + manual checks; merge claims need waiver discipline like `NO COVERAGE TOOL`  
    - Design blocker → **gap** → fix → resume from the appropriate step  
    - No UI changed → **SKIPPED** with reason  
 5. **Final verify** — bundled **`/check-work`** (spawn description starts with `[checking my work]`; require `VERDICT: PASS`)  
 6. **Lead merge decision** per gates + `docs/waivers/`  
+7. **Commit metrics** — before any commit of this work: `python scripts/prepare_commit_metrics.py --model … --input N --output M` (or `--unmeasured`). Updates `VERSION` + ledger. Never invent counts.
 
 ## Full-protocol fix loop
 
@@ -37,7 +39,7 @@ MAX = 3
 while protocol_cycle < MAX:
   run steps 1→5 in order
   if all steps PASS/SKIPPED(with reason) and /check-work VERDICT: PASS:
-    exit protocol success
+    exit protocol success (then step 7 when figures known)
   protocol_cycle += 1
   fix open bugs/gaps/test failures
   resume from the failed step (re-run earlier steps if the fix changed code)
@@ -45,13 +47,11 @@ if still failing after MAX:
   escalate with QA reports + review paths + waiver proposals — do not claim done
 ```
 
-Align with AGENTS.md max **3** fix cycles after a failed gate.
-
 ## Exit criteria (all required for “done”)
 
 | Gate | Pass condition |
 |------|----------------|
-| Targeted | GO (tests green, lint/typecheck green when real, accuracy pass, coverage gate or waiver/NO TOOL) |
+| Targeted | GO (tests green, lint green when real, accuracy pass, coverage gate or waiver/NO TOOL/UNMEASURED) |
 | Review | No open bug/gap (incl. security pass when triggered), or SKIPPED with recorded reason, or durable waiver |
 | Regression | GO (or durable waiver) |
 | UI verification | No design blockers + evidence recorded, or SKIPPED (no UI changed), or `NO UI TOOLING` + waiver path |
@@ -59,7 +59,7 @@ Align with AGENTS.md max **3** fix cycles after a failed gate.
 
 **Implementers / Lead must not claim session done** when code changed and targeted tests were not run green (unless docs/comment-only escape hatch applies).
 
-**Lead handoff:** If a specialist left Ready:**no** only because they lacked shell, Lead still runs this protocol (starting at targeted) — do not wait forever for Ready:yes.
+**Lead handoff:** If a specialist left Ready:**no** only because they lacked shell, Lead still runs this protocol (starting at targeted).
 
 ## Trivial escape
 
@@ -76,6 +76,7 @@ Do not run this skill concurrently with `/implement` mid-loop. Finish implement 
 | Targeted | PASS/FAIL | commands + coverage + lint + cycle N |
 | /review | PASS/FAIL/SKIPPED | open bugs/gaps or skip reason; security pass if triggered |
 | Regression | PASS/FAIL | phase + commands + cycle N |
-| UI verify | PASS/FAIL/SKIPPED | evidence paths (screenshots/stories/E2E) or blockers or NO UI TOOLING |
+| UI verify | PASS/FAIL/SKIPPED | evidence paths or blockers or NO UI TOOLING |
 | /check-work | PASS/FAIL | VERDICT |
 | Protocol cycles | N of 3 | escalate if N==3 and failing |
+| Token ledger | updated / skipped | entry or “unknown — not recorded” |

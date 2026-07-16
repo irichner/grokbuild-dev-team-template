@@ -1,21 +1,21 @@
 ---
 name: plan-review-loop
 description: >
-  Critique a plan before implementation using gf-plan-reviewer (or recommend /cold-review).
-  Enforces plan-quality hard gates, revise→re-review loop (max 2 passes), and no implement until approve/waiver.
+  Critique a plan before implementation using gf-plan-reviewer.
+  Default plan-critique path for this template. Enforces plan-quality hard gates,
+  revise→re-review loop (max 2 passes), and no implement until approve/waiver.
   Use before coding, for plan critique, or /plan-review-loop.
+  Optional /cold-review only if grok inspect lists it (external plugin).
 disable-model-invocation: true
 ---
 
 # Skill: Plan Review Loop
 
-## Prefer
+## Default path
 
-If `/cold-review` appears in `grok inspect` for this workspace, prefer it for adversarial plan review.
-Still apply **hard gates** from `.grok/docs/plan-quality-standards.md` when interpreting cold-review output.
-**Same loop policy as this skill:** max **2** revise→re-review cycles; Approve bar = all applicable hard gates (1–7 always, 8 when UI touched);
-write durable review notes (e.g. `docs/plans/<name>.review.md` / `.review-2.md` or cold-review equivalent).
-This skill is the fallback when cold-review is missing or unresolved.
+**This skill is the default plan critique** for installed templates.
+
+Optional: if `/cold-review` appears in `grok inspect` for this workspace (often an external Claude plugin), you may use it for adversarial review — still apply **hard gates** from `.grok/docs/plan-quality-standards.md` and the **same** loop policy (max **2** passes). Cold-review is **not** required and is **not** installed by `install_agentic_team.py`.
 
 ## Inputs
 
@@ -68,7 +68,7 @@ if still not Approve:
 1. Confirm plan path under `docs/plans/`.  
 2. Run loop above (max 2 passes).  
 3. Present final Review Report + revised plan to user.  
-4. **Do not implement** until user approves **or** durable waiver covers residual hard-gate failures (any Overall other than Approve).  
+4. **Do not implement** until user approves **or** durable waiver covers residual hard-gate failures.  
 5. Record residual risks / waivers paths in the handoff to implement.
 
 ## Exit criteria
@@ -77,6 +77,6 @@ if still not Approve:
 |---------|-----------|
 | **Ready to implement** | Overall Approve (pass 1 or 2) **and** user approval |
 | **Blocked** | Hard gates still failing after pass 2; no implement |
-| **Waived residual** | User accepts residual hard-gate failures (**Request Changes** or **Major Concerns**) **and** durable `docs/waivers/<name>.md` exists |
+| **Waived residual** | User accepts residual hard-gate failures **and** durable `docs/waivers/<name>.md` exists |
 
 Max **2** review passes; between pass 1 and pass 2 the plan **must** change. After pass 2 failure, escalate (no automatic third review). No silent Approve of weak plans.

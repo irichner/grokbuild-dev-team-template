@@ -14,6 +14,9 @@ htmlcov/
 .venv/
 venv/
 
+# Metrics pending (commit-time token supply; do not commit)
+docs/metrics/pending-commit.env
+
 # OS / editor
 .DS_Store
 Thumbs.db

@@ -22,7 +22,7 @@ disable-model-invocation: true
 
 ## Steps
 
-1. Read AGENTS.md Project Test Commands. If Unit is TODO/NONE without waiver → **NO-GO**. Resolve Lint / typecheck command too (part of GO when real).  
+1. Read AGENTS.md Project Test Commands. If Unit is TODO/NONE without waiver → **NO-GO**. Resolve **Lint** command too (part of GO when real).  
 2. List changed files (`git status` / `git diff --name-only` when git exists).  
 3. Map to tests (in order): plan Testing Strategy paths → colocated tests → smallest module suite that covers changed packages. Record selection rule used.  
 4. Enter **fix → re-test loop** (below).  
@@ -39,11 +39,11 @@ MAX = 3
 while True:
   cycle += 1
   run unit command once (selected paths when supported; else full unit suite with scope note)
-  run Lint / typecheck command when real; capture exit code
+  run Lint command when real; capture exit code
   if Coverage command is real: measure per the coverage ladder below; never invent numbers
   accuracy pass per test-accuracy-standards.md
-  if tests exit 0 AND lint/typecheck exit 0 (when real) AND accuracy pass
-     AND (coverage gate met OR durable waiver OR NO COVERAGE TOOL noted):
+  if tests exit 0 AND lint exit 0 (when real) AND accuracy pass
+     AND (coverage gate met OR durable waiver OR NO COVERAGE TOOL OR UNMEASURED/no-changed-lines noted):
     Recommendation: GO
     break
   if cycle >= MAX:
@@ -58,12 +58,14 @@ while True:
 
 ### Coverage gate
 
-- **≥ 80%** when tool exists and measured.  
+- **≥ 80%** when tool exists and **changed lines were measured**.  
 - Measurement ladder — record which rung was used:  
   1. changed-line % (diff-cover or equivalent) — preferred  
   2. changed-file % proxy  
   3. whole-package % — weakest; only with explicit limitation note  
-- Else `NO COVERAGE TOOL` / `UNMEASURED` — record explicitly; merge needs durable waiver if Coverage was expected.
+- **Vacuous diff:** if diff-cover says “No lines with coverage information in this diff” (or 0 relevant lines) → record **`UNMEASURED / no changed lines`**. Do **not** report 100% or “gate met at 100%.” See `.grok/docs/coverage-policy.md`.  
+- Compare-branch ladder: `origin/main` → `main` → `master` → UNMEASURED + missing-ref note.  
+- Else `NO COVERAGE TOOL` / `UNMEASURED` — record explicitly; merge needs durable waiver if Coverage was expected and not vacuous-empty.
 
 ### Accuracy blockers (NO-GO regardless of green exit)
 
@@ -75,7 +77,7 @@ while True:
 
 | Result | Condition |
 |--------|-----------|
-| **GO** | Tests exit 0; lint/typecheck exit 0 (when command real); accuracy pass; coverage gate met **or** durable waiver **or** NO COVERAGE TOOL recorded |
-| **NO-GO** | Failures after 3 full suite runs, lint/typecheck failures, accuracy blockers, or missing unit command without waiver |
+| **GO** | Tests exit 0; lint exit 0 (when command real); accuracy pass; coverage gate met **or** durable waiver **or** NO COVERAGE TOOL **or** UNMEASURED/no-changed-lines recorded |
+| **NO-GO** | Failures after 3 full suite runs, lint failures, accuracy blockers, or missing unit command without waiver |
 
 Max **3** full suite runs (AGENTS.md). Do not claim targeted PASS without a real run this session.

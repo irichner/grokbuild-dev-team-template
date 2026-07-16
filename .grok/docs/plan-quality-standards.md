@@ -1,6 +1,7 @@
 # Plan Quality Standards
 
-Mandatory reference for plan authors and `gf-plan-reviewer` / `/plan-review-loop` / `/cold-review`.
+Mandatory reference for plan authors and `gf-plan-reviewer` / **`/plan-review-loop`** (default).
+Optional `/cold-review` only when present in `grok inspect` (external plugin — not required).
 Plans that fail hard gates must receive **Request Changes** or **Major Concerns** — not Approve.
 
 ## Hard gates (must all pass for Approve)
@@ -31,7 +32,7 @@ Plans that fail hard gates must receive **Request Changes** or **Major Concerns*
 
 ## Loop alignment
 
-- Max **2** plan-review passes (`/plan-review-loop` **or** `/cold-review` with the same cap).
+- Max **2** plan-review passes (`/plan-review-loop` default; optional `/cold-review` with the same cap when available).
 - Between passes: plan must be revised (not re-reviewed unchanged).
 - After pass 2, residual **hard-gate failures** (any Overall other than Approve — **Request Changes** or **Major Concerns**) → do **not** implement unless durable waiver under `docs/waivers/`.
 - Prefer **Major Concerns** when labeling unsafe/unbounded residual risk for waivers.

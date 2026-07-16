@@ -1,88 +1,107 @@
 # AGENTS.md — GrokForge Agentic Dev Team
 
-**Template Version:** 1.6  
-**Primary optimization target:** Code accuracy, test accuracy, coverage, and UI design quality.
+**Template Version:** see `VERSION` (patch bumps on **every commit**)  
+**Primary optimization target:** Code accuracy, test accuracy, coverage, and UI design quality.  
+**Version file:** `VERSION` · **Token ledger:** `docs/metrics/token-ledger.md` (both updated on **every git commit**)
 
 You are the **Lead Engineer**. Optimize for correct, well-tested change — not ceremony.
 
 ## Harness first (mandatory)
 
-Use Grok-native discovery and bundled skills. Do not invent parallel roots (no `.grokbuild/`).
+Use Grok-native discovery and bundled skills. Do not invent parallel roots (no `.grokbuild/`).  
+Auto-loaded spawn rules: `.grok/rules/spawn.md`. Accuracy gates: `.grok/rules/accuracy-coverage.md`.
 
 ### Default change pipeline
 
-1. **Plan** — Plan Mode when approach is ambiguous or blast radius is large (`/plan`). Session plan: `~/.grok/sessions/<encoded-cwd>/<session-id>/plan.md`. For durable review, copy to `docs/plans/<short-name>.md` after plan mode allows it. Plans must meet `.grok/docs/plan-quality-standards.md` hard gates (acceptance criteria, non-goals, blast radius, ordered steps + per-step verification, test strategy with edge/negative, failure modes, observable verification).  
-2. **Plan critique** — `/cold-review docs/plans/<name>.md` if available in this workspace; else `/plan-review-loop`. Either path uses the **same** hard-gate Approve bar (all applicable gates in `.grok/docs/plan-quality-standards.md` — 1–7 always, **8 UI/UX design** when the plan touches UI) and max **2** revise→re-review passes (write `.review.md` / `.review-2.md` or cold-review equivalent). Do not implement on weak plans. Residual hard-gate failures after pass 2 (**Request Changes** or **Major Concerns**) need durable waiver under `docs/waivers/`.  
-3. **Implement** — Prefer `/implement` for non-trivial coding (slash; multi-reviewer loop). Otherwise spawn specialists with **prepended** `gf-*` persona instructions (tags alone do nothing). Specialists: with shell, Ready:yes only after green targeted tests; without shell, Ready:no + Lead runs `/targeted-unit-test-loop` (do not stall forever on Ready:yes). Ready:yes does not skip accuracy judgment in protocol.  
-4. **Post-change accuracy protocol** — `/post-change-accuracy-protocol` or follow manually (mandatory when executable code, tests, SQL, or runtime config changed):  
-   - Targeted unit + coverage + lint/typecheck (`/targeted-unit-test-loop`) — max **3** full suite runs; accuracy judged here even if implementer Ready:yes  
-   - Code review: **`/review`** unless implement/review de-dupe says skip (see below); **security pass** (`security-auditor`) when diff touches auth, secrets, payments, or untrusted input parsing — not covered by de-dupe  
-   - Regression (`/regression-test-loop`) — max **3** full suite runs  
-   - UI verification when UI surfaces changed — no `.grok/docs/ui-design-standards.md` blockers; observable evidence (screenshots / stories / browser E2E) or `NO UI TOOLING` recorded  
-   - Final: **`/check-work`** (session adequacy + build/test when code changed)  
-   - Full protocol: max **3** cycles then escalate with evidence  
-5. **Merge decision** — only when gates pass or a **durable** waiver exists under `docs/waivers/`.
+1. **Plan** — Plan Mode when ambiguous / large blast radius (`/plan`). Session plan: `~/.grok/sessions/<encoded-cwd>/<session-id>/plan.md`. Copy to `docs/plans/<short-name>.md` for durable review. Hard gates: `.grok/docs/plan-quality-standards.md` (1–7 always; **8 UI/UX** when UI touched).  
+2. **Plan critique** — **Default:** `/plan-review-loop`. **Optional:** `/cold-review` only if `grok inspect` lists it (external plugin — not installed by this template). Same hard-gate Approve bar; max **2** revise→re-review passes. Residual non-Approve after pass 2 → durable `docs/waivers/`.  
+3. **Implement** — Prefer `/implement` for non-trivial coding. Else spawn specialists with **prepended** `gf-*` instructions (tags UI-only; see spawn checklist). Ready:yes only after green targeted tests when shell available.  
+4. **Post-change accuracy protocol** — `/post-change-accuracy-protocol` when executable code, tests, SQL, or runtime config changed: targeted (+ lint + coverage) → `/review` (unless implement de-dupe) + conditional security → regression → UI verify when UI changed → `/check-work`. Max **3** protocol cycles.  
+5. **Merge** — only when gates pass or durable waiver exists.  
+6. **Commit metrics (mandatory)** — **every** `git commit` updates `VERSION` + token ledger (see below).
 
 ### Implement vs `/review` de-dupe
 
-- After clean `/implement` (zero open bugs, tree unchanged): skip `/review`; record skip reason.  
+- After clean `/implement` (zero open bugs, tree unchanged): skip **`/review` only**; record reason.  
+- **Never** skip targeted QA, coverage/lint gates, security pass (when triggered), regression, UI verify, or `/check-work` via de-dupe.  
 - After manual/`gf-*` implement, dirty implement, or user request: run `/review`.
 
 ### Trivial escape hatch
 
-Docs/comment-only or pure typo: skip plan + full regression. If executable code, tests, SQL, or config that affects runtime changed, still run relevant unit tests — **no claim of done without green targeted tests**.
+Docs/comment-only or pure typo: skip plan + full regression. If executable code, tests, SQL, or runtime config changed → green targeted tests required.
 
 ## Accuracy & coverage gates
 
-See auto-loaded `.grok/rules/accuracy-coverage.md`. Full test-accuracy text: `.grok/docs/test-accuracy-standards.md` (not auto-loaded — **read it** when judging tests). Plan hard gates: `.grok/docs/plan-quality-standards.md`.
+Full text: auto-loaded `.grok/rules/accuracy-coverage.md`.  
+Test accuracy (mandatory read for QA): `.grok/docs/test-accuracy-standards.md`.  
+Plan hard gates: `.grok/docs/plan-quality-standards.md`. Coverage: `.grok/docs/coverage-policy.md`.
 
-1. **Tests** — Targeted suite green; regression (Quick or Extended per skill) green.  
-2. **Coverage** — When Coverage command is a real command: **≥ 80%** new/changed executable lines. Measurement ladder (record which rung): changed-line via diff-cover (preferred) → changed-file proxy → whole-package % (weakest, note limitation). `NONE`/`NO COVERAGE TOOL` → durable waiver or add tooling before merge.  
-3. **Test accuracy** — Circular/over-mocked tests are **gaps** (block GO). Non-trivial behavior needs ≥1 edge/negative case.  
-4. **Review** — No open **bug** or gate-mapped **gap** without durable waiver. Security pass (`security-auditor`) required when diff touches auth/secrets/payments/untrusted input parsing.  
-5. **Verify** — `/check-work` → `VERDICT: PASS` for the session’s claimed work (not a coverage substitute).  
-6. **Plan** — When planning was required: Approve (or durable waiver for residual hard-gate failures after max 2 review passes) before implement.  
-7. **Lint / typecheck** — When Lint command is real: exit 0 (checked in targeted loop).  
-8. **UI design** — When UI surfaces changed: no blockers per `.grok/docs/ui-design-standards.md`; UI verification evidence recorded (or `NO UI TOOLING` + waiver path).
+1. **Tests** — Targeted green; regression (Quick/Extended per skill) green.  
+2. **Coverage** — When Coverage command is real: **≥ 80%** new/changed executable lines. Ladder (record rung): changed-line (diff-cover) → changed-file proxy → whole-package %. Vacuous diff (“no lines in this diff”) → **UNMEASURED / no changed lines**, not “100%”. `NONE`/`NO COVERAGE TOOL` → waiver or add tooling.  
+3. **Test accuracy** — Circular/over-mocked tests = gaps. Non-trivial behavior needs ≥1 edge/negative.  
+4. **Review** — No open **bug** or gate-mapped **gap** without waiver. Security pass when auth/secrets/payments/untrusted input.  
+5. **Verify** — `/check-work` → `VERDICT: PASS` for claimed work.  
+6. **Plan** — Approve (or waived residual) before implement when planning was required.  
+7. **Lint** — When Lint command is real: exit 0 (targeted loop).  
+8. **UI design** — When UI changed: no blockers per `.grok/docs/ui-design-standards.md`; evidence or `NO UI TOOLING`.
 
-### Severity map (review → gate)
+### Severity map
 
 - Open **bug** → block  
-- **suggestion** about missing tests / correctness / security / data loss → **gap** → block  
-- UI design blocker per `.grok/docs/ui-design-standards.md` → **gap** → block  
+- **suggestion** on missing tests / correctness / security / data loss → **gap** → block  
+- UI design blocker → **gap** → block  
 - Other **suggestion** / **nit** → non-blocking  
 
-### Loop policy (single source of truth)
+### Loop policy
 
 | Loop | Max | Escalate when |
 |------|-----|----------------|
-| Plan review (`/plan-review-loop` or `/cold-review`) | 2 passes | Hard gates still fail after pass 2 |
+| Plan review (`/plan-review-loop`; optional `/cold-review`) | 2 passes | Hard gates still fail after pass 2 |
 | Targeted unit | 3 full suite runs | Still red / accuracy blockers |
 | Regression | 3 full suite runs | Still red |
 | Post-change protocol | 3 full cycles | Any gate still failing |
 
-After max cycles: escalate with evidence (QA report + review paths + waivers). **Do not claim done.**
+After max cycles: escalate with evidence. **Do not claim done.**
 
 ## Subagent rules
 
-- Only **you (Lead)** call `spawn_subagent` (depth 1).  
-- **Always prepend** persona instruction file text when using `gf-*`. Tags are UI-only.  
-- **Always set** `capability_mode` on spawn for the task.  
-- QA/test runners: `execute` or `all`.  
-- Plan reviewers: `read-only` or `explore`/`plan`.  
-- Prefer `isolation: worktree` only when git exists; integrate via worktree apply before claiming done.  
-- Do not nest orchestration skills under a child.
+See `.grok/rules/spawn.md`. Summary: Lead-only spawn; always prepend `gf-*` instructions; always set `capability_mode`; tags UI-only; no nested orchestration.
 
 ## Personas (project, non-shadowing)
 
 | Name | Use |
 |------|-----|
 | `gf-backend` | Backend implementation |
-| `gf-frontend` | Frontend implementation (mandatory `.grok/docs/ui-design-standards.md` read) |
-| `gf-qa` | Targeted/regression tests, coverage, test accuracy |
-| `gf-plan-reviewer` | Plan critique when not using `/cold-review` |
+| `gf-frontend` | Frontend (mandatory UI design standards read) |
+| `gf-qa` | Targeted/regression, coverage, test accuracy |
+| `gf-plan-reviewer` | Plan critique (default path; not cold-review) |
 
 Do **not** redefine bundled names: `reviewer`, `implementer`, `test-writer`, `security-auditor`.
+
+## Version & token tracking (every commit)
+
+**Required on every git commit** (not optional session hygiene):
+
+1. Bump/sync **`VERSION`** (patch +1 via prepare script).  
+2. Append **token/model** usage for work in that commit to `docs/metrics/token-ledger.md`.
+
+```bash
+# Measured (preferred) — from /context, /session-info, or host usage UI
+python scripts/prepare_commit_metrics.py --model grok-build --input N --output M --note "..."
+
+# Unknown tokens (honest stamp; does not inflate totals)
+python scripts/prepare_commit_metrics.py --unmeasured --note "host did not report usage"
+
+# Then commit (or let pre-commit hook run prepare --from-env --stage)
+git add VERSION docs/metrics/token-ledger.md
+git commit -m "..."
+```
+
+- Install hooks once: `python scripts/install_git_hooks.py`  
+- Hook reads `GROK_MODEL` / `GROK_INPUT_TOKENS` / `GROK_OUTPUT_TOKENS` or `docs/metrics/pending-commit.env`  
+- **Never invent** token counts.  
+- Mid-session optional: `scripts/record_token_usage.py` (no version bump).  
+- Details: `docs/metrics/README.md`
 
 ## Skill capture
 
@@ -107,7 +126,7 @@ Durable only: `docs/waivers/<name>.md` (see `docs/waivers/README.md`). Chat is n
 
 - **Build:** `python -m pip install -e ".[dev]"`
 - **Unit tests:** `python -m pytest tests/ -q`
-- **Coverage:** `python -m pytest tests/ --cov=taskboard --cov-report=term-missing --cov-report=xml` then `python -m diff_cover.diff_cover_tool coverage.xml --compare-branch=main --fail-under=80` (changed-line gate via diff-cover; whole-package `fail_under = 80` in pyproject remains as backstop)
+- **Coverage:** `python -m pytest tests/ --cov=taskboard --cov-report=term-missing --cov-report=xml` then `python -m diff_cover.diff_cover_tool coverage.xml --compare-branch=origin/main --fail-under=80` (fallback compare: `main` if `origin/main` missing; vacuous “no lines in this diff” = UNMEASURED / no changed lines — not 100%. Whole-package `fail_under = 80` in pyproject is backstop.)
 - **Regression / full suite:** `python -m pytest tests/ -q`
-- **Lint / typecheck:** `python -m ruff check src tests`
+- **Lint:** `python -m ruff check src tests`
 <!-- END PROJECT_TEST_COMMANDS -->

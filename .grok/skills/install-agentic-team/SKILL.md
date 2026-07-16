@@ -43,17 +43,20 @@ Run the **stdlib installer script** — do not hand-copy files or re-run free-fo
    - conflicts skipped (if any)
    - handoff path: `docs/plans/agentic-team-install-handoff.md` (when `--write-handoff`)
 6. If Coverage or Unit is NONE/TODO: point to durable waiver or filling `AGENTS.md` before claiming accuracy gates are operational.
-7. Optional post-install: Fixture A under target (`fixtures/agentic-template-acceptance/bad-plan.md` → `docs/plans/acceptance-bad-plan.md` + `/plan-review-loop` or `/cold-review`).
+7. Optional post-install: Fixture A under target (`fixtures/agentic-template-acceptance/bad-plan.md` → `docs/plans/acceptance-bad-plan.md` + `/plan-review-loop`; optional `/cold-review` only if listed in `grok inspect`).
 
 ## What it installs
 
-- `.grok/` (rules, personas, skills, roles, docs including plan-quality + test-accuracy standards, workflows)
+- `.grok/` (rules including spawn checklist + accuracy gates, personas, skills, **all four** role catalog files, docs including plan-quality + test-accuracy + ui-design + coverage-policy, workflows)
 - `docs/waivers/README.md` (does not delete existing waivers)
-- `fixtures/agentic-template-acceptance/`
-- Generated root `AGENTS.md` (pipeline, loop policy, scanned Project Test Commands)
-- Ensures `docs/plans/` and `docs/waivers/` directories exist
+- `docs/metrics/README.md` + seed `docs/metrics/token-ledger.md` **only if missing** (never overwrites usage history)
+- `scripts/prepare_commit_metrics.py`, `record_token_usage.py`, `install_git_hooks.py`, `githooks/pre-commit` (every-commit VERSION + tokens)
+- Seeds `VERSION` to `0.1.0` if missing; installs pre-commit metrics hook in git targets
+- `fixtures/agentic-template-acceptance/` (includes `sample-ui/` for Fixture E)
+- Generated root `AGENTS.md` (pipeline, loop policy, scanned Project Test Commands; Coverage prefers pytest-cov + diff-cover when reconstructable)
+- Ensures `docs/plans/`, `docs/waivers/`, and `docs/metrics/` directories exist
 
-`--verify` requires core skills, persona instructions, and docs (`plan-quality-standards.md`, `test-accuracy-standards.md`, etc.).
+`--verify` requires core skills, persona instructions, roles, spawn rule, metrics paths, and docs (`plan-quality-standards.md`, `test-accuracy-standards.md`, etc.).
 
 ## What it never installs
 

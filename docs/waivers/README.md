@@ -10,7 +10,7 @@ Durable record only. Chat LGTM is not a waiver.
 - **Date:**
 - **Author:** (human user)
 - **Scope:** paths / feature
-- **Gate waived:** coverage | test-commands | review-bug | review-gap | regression-residual | other
+- **Gate waived:** coverage | test-commands | review-bug | review-gap | regression-residual | lint | ui-design | plan-quality | other
 - **Reason:**
 - **Residual risk:**
 - **Follow-up:**

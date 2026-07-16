@@ -1,4 +1,4 @@
-# GrokForge project template (v1.6)
+# GrokForge project template (v1.7)
 
 Grok-native paths only. Optimized for **accuracy + coverage + UI design quality** with explicit revise/retry loops.
 
@@ -7,11 +7,11 @@ Grok-native paths only. Optimized for **accuracy + coverage + UI design quality*
 | Path | Loaded by Grok? |
 |------|-----------------|
 | Root `AGENTS.md` | Yes (project rules) |
-| `.grok/rules/*.md` | Yes |
+| `.grok/rules/*.md` | Yes (incl. spawn checklist + accuracy gates) |
 | `.grok/skills/*/SKILL.md` | Yes (skills / slash commands) |
 | `.grok/personas/*.toml` | Yes (persona **catalog only**; spawn needs instruction **prepend**) |
-| `.grok/roles/*.toml` | Catalog defaults when resolution applies — **skills must still set capability_mode and prepend instructions** |
-| `.grok/docs/*`, `.grok/workflows/*` | **No** — reference only (plan-quality + test-accuracy + ui-design standards: **mandatory `read_file`** for reviewers/QA/frontend) |
+| `.grok/roles/*.toml` | Catalog defaults only — **not spawn binding**; skills still set `capability_mode` + prepend |
+| `.grok/docs/*`, `.grok/workflows/*` | **No** — reference only (mandatory `read_file` for reviewers/QA/frontend) |
 
 ## Prefer bundled skills
 
@@ -22,20 +22,27 @@ Grok-native paths only. Optimized for **accuracy + coverage + UI design quality*
 - `/create-skill` — capture new skills  
 - `/plan`, `/view-plan` — Plan Mode  
 
-Project skills add plan-review (hard gates + max 2 passes), targeted/regression testing (max 3 fix cycles), coverage + lint gates, UI design gate + verification (`.grok/docs/ui-design-standards.md`), and the post-change protocol (max 3 full cycles).
+Project skills: **`/plan-review-loop` (default plan critique)**, targeted/regression testing, post-change protocol, parallel fullstack, install-agentic-team.  
+**`/cold-review`** is optional and only if present in `grok inspect` (external plugin — not shipped by this template).
 
-## Accuracy loops (v1.6)
+## Accuracy loops (v1.7)
 
 | Skill / phase | Loop | Cap |
 |---------------|------|-----|
-| `/plan-review-loop` or `/cold-review` | revise → re-review | 2 passes |
-| `/targeted-unit-test-loop` | fix → re-test (1 full suite run/cycle) | 3 full suite runs |
-| `/regression-test-loop` | fix → re-test (1 full phase run/cycle) | 3 full phase runs |
+| `/plan-review-loop` (optional `/cold-review`) | revise → re-review | 2 passes |
+| `/targeted-unit-test-loop` | fix → re-test | 3 full suite runs |
+| `/regression-test-loop` | fix → re-test | 3 full phase runs |
 | `/post-change-accuracy-protocol` | full protocol retry | 3 cycles |
+
+## Metrics (every commit)
+
+- `VERSION` patch-bumps on each commit  
+- Token / model usage: `docs/metrics/token-ledger.md` via `scripts/prepare_commit_metrics.py`  
+- Git hook: `python scripts/install_git_hooks.py`
 
 ## Git required for full protocol
 
-`/review` local mode, worktrees, and git-diff test selection need a git repo. Without git: config may load from CWD `.grok/`, but accuracy protocol is degraded.
+`/review` local mode, worktrees, and git-diff coverage need a git repo. Without git: degraded protocol.
 
 ## Deprecated
 

@@ -12,7 +12,7 @@ You own test execution, coverage numbers, and test-accuracy critique.
 
 - If commands are TODO/NONE without a durable waiver path cited by Lead, report **NO-GO** for operational gates.
 - Prefer real test runs over claims. Record exact commands and exit codes.
-- Lint / typecheck (when the command is real in AGENTS.md) must exit 0 for GO; failures are triaged like test failures.
+- Lint (when the command is real in AGENTS.md) must exit 0 for GO; failures are triaged like test failures.
 - **Independence:** you fix **tests only** (never weakening assertions) and disclose every self-applied fix in the report. Product-code fixes are handed back to the implementer/Lead with the failing command — you do not grade your own product fix.
 - Circular / over-mocked tests = **accuracy failure** (blocks GO) — see standards doc.
 - Non-trivial behavior in the diff needs **≥1 edge or negative case**; happy-path-only auth/error/data-loss paths = **gap** (blocks GO).
@@ -29,8 +29,8 @@ cycle = 0
 MAX = 3
 while True:
   cycle += 1
-  run selected tests once (+ coverage and lint/typecheck when applicable)   # single run for this cycle
-  if exit 0 AND lint/typecheck exit 0 (when real) AND accuracy pass AND coverage gate met/waived:
+  run selected tests once (+ coverage and lint when applicable)   # single run for this cycle
+  if exit 0 AND lint exit 0 (when real) AND accuracy pass AND coverage gate met/waived/UNMEASURED:
     Recommendation: GO
     break
   # failed this run — triage notes always OK
@@ -52,6 +52,7 @@ Align with AGENTS.md: max **3** full suite runs after a failed gate path, then e
 - Prefer line-level changed coverage when the tool supports it (e.g. pytest-cov + diff-cover, nyc/istanbul changed files, go cover profiles, llvm-cov).
 - If only whole-project % is available, record that limitation and use changed-file proxy (files touched must meet threshold or be listed as gaps).
 - Never invent a percentage. If unmeasured: `NO COVERAGE TOOL` or `UNMEASURED`.
+- **Vacuous diff-cover** (“No lines with coverage information in this diff”) → `UNMEASURED / no changed lines` — **not** 100% and **not** “gate met at 100%.” See `.grok/docs/coverage-policy.md`.
 
 ## Accuracy critique checklist
 
@@ -72,8 +73,8 @@ Use this plain-text block (no nested code fence required when writing the file):
     - Scope (files / git range):
     - Commands (exact):
     - Results (pass/fail counts; critical failures; exit codes):
-    - Lint/typecheck (command + exit code; or NONE):
-    - Coverage (tool; ladder rung used: changed-line | changed-file | whole-package; % or UNMEASURED; gate met? yes/no/waived/NO TOOL):
+    - Lint (command + exit code; or NONE):
+    - Coverage (tool; ladder rung used: changed-line | changed-file | whole-package | vacuous-no-changed-lines; % or UNMEASURED; gate met? yes/no/waived/NO TOOL/UNMEASURED):
     - Self-applied fixes (test-only; none | list with paths):
     - Test accuracy findings:
     - Gaps (untested behaviors in diff; missing edge/negative):

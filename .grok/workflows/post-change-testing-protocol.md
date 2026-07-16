@@ -2,8 +2,8 @@
 
 Executable source of truth: `.grok/skills/post-change-accuracy-protocol/SKILL.md`.
 
-1. Targeted unit + coverage + lint/typecheck (fix→re-test, max 3 cycles)  
-2. `/review` (or SKIPPED per implement de-dupe) + security pass when diff touches auth/secrets/payments/untrusted input  
+1. Targeted unit + coverage + lint (fix→re-test, max 3 cycles)  
+2. `/review` (or SKIPPED per implement de-dupe — **review only**; never skip QA/security/regression/UI/check-work) + security pass when diff touches auth/secrets/payments/untrusted input  
 3. Regression (fix→re-test, max 3 cycles)  
 4. UI verification when UI surfaces changed (design blockers = gaps; observable evidence or `NO UI TOOLING`)  
 5. `/check-work`  

@@ -165,7 +165,7 @@ cd frontend && npm run build
     assert "npm run build" in build.value
     cov = scan.by_name("Coverage")
     assert cov and cov.status == "NONE"
-    lint = scan.by_name("Lint / typecheck")
+    lint = scan.by_name("Lint")
     assert lint and lint.status == "REAL"
     assert "ruff" in lint.value
     assert "typecheck" in lint.value
@@ -200,10 +200,68 @@ def test_agents_backup_on_existing(inst, tmp_path: Path) -> None:
     assert "custom lead rules" in backups[0].read_text(encoding="utf-8")
 
 
-def test_template_version_is_1_6(inst) -> None:
-    assert inst.TEMPLATE_VERSION == "1.6"
+def test_template_version_is_1_7(inst) -> None:
+    assert inst.TEMPLATE_VERSION == "1.7"
     agents = (REPO_ROOT / "AGENTS.md").read_text(encoding="utf-8")
-    assert "Template Version:** 1.6" in agents
+    assert "VERSION" in agents
+    assert "every" in agents.lower() and "commit" in agents.lower()
+    version = (REPO_ROOT / "VERSION").read_text(encoding="utf-8").strip()
+    assert version.startswith("1.7")
+    assert (REPO_ROOT / "scripts" / "prepare_commit_metrics.py").is_file()
+    assert (REPO_ROOT / "scripts" / "githooks" / "pre-commit").is_file()
+
+
+def test_scan_python_package_emits_diff_cover(inst, tmp_path: Path) -> None:
+    target = tmp_path / "proj"
+    target.mkdir()
+    _git_init(target)
+    _write(
+        target / "pyproject.toml",
+        """
+[project]
+name = "widget"
+version = "0.1.0"
+
+[project.optional-dependencies]
+dev = ["pytest>=8", "pytest-cov>=5", "diff-cover>=9", "ruff>=0.6"]
+
+[tool.coverage.run]
+source = ["widget"]
+""",
+    )
+    (target / "tests").mkdir()
+    scan = inst.scan_project_commands(target)
+    cov = scan.by_name("Coverage")
+    assert cov and cov.status == "REAL"
+    assert "--cov=widget" in cov.value
+    assert "diff_cover" in cov.value or "diff-cover" in cov.value
+    assert "origin/main" in cov.value
+    lint = scan.by_name("Lint")
+    assert lint is not None
+
+
+def test_install_seeds_metrics_and_preserves_ledger(inst, tmp_path: Path) -> None:
+    target = tmp_path / "proj"
+    target.mkdir()
+    _git_init(target)
+    report = inst.install(REPO_ROOT, target, verify=True)
+    assert not report.errors
+    assert report.verify_ok is True
+    assert (target / ".grok" / "rules" / "spawn.md").is_file()
+    assert (target / "docs" / "metrics" / "README.md").is_file()
+    ledger = target / "docs" / "metrics" / "token-ledger.md"
+    assert ledger.is_file()
+    custom = "# Token & model usage ledger\n\n**Template version:** 1.7\n\n## Entries\n\n| Date (UTC) | Session / label | Model | Input | Output | Total | Notes |\n|---|---|---|---:|---:|---:|---|\n| 2026-01-01 | s1 | grok-build | 10 | 5 | 15 | keep me |\n"
+    ledger.write_text(custom, encoding="utf-8")
+    report2 = inst.install(REPO_ROOT, target, force=True)
+    assert not report2.errors
+    assert "keep me" in ledger.read_text(encoding="utf-8")
+    for role in ("gf-backend.toml", "gf-frontend.toml", "gf-qa.toml", "gf-plan-reviewer.toml"):
+        assert (target / ".grok" / "roles" / role).is_file()
+    assert (target / "fixtures" / "agentic-template-acceptance" / "sample-ui" / "index.html").is_file()
+    assert (target / "scripts" / "prepare_commit_metrics.py").is_file()
+    assert (target / "scripts" / "githooks" / "pre-commit").is_file()
+    assert (target / "VERSION").is_file()
 
 
 def test_install_includes_plan_quality_and_loop_assets(inst, tmp_path: Path) -> None:

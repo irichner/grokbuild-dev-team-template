@@ -1,83 +1,59 @@
 # Bootstrap handoff
 
-- **Date:** 2026-07-12
-- **Template version:** 1.4
-- **bootstrap_status:** COMPLETE
-- **accuracy_gates:** OPERATIONAL (updated after TaskBoard seed + green targeted/regression; see Post-bootstrap section)
-- **git_mode:** full
-- **V8:** PASS (`docs/plans/bootstrap-v8-inspect.json`) — five project skills present with `source.type: project`
-- **V10 cold-review:** available (plugin `lanshore-claude-workflow`)
-- **V11:** PASS (`docs/plans/acceptance-bad-plan.review.md`; `spawn_used: true`) — Overall: Major Concerns; gold standards covered
-- **V13:** PASS (`docs/plans/bootstrap-v13-targeted-dry-run.md`) — NO-GO at bootstrap time when Unit was NONE (fail-closed proven)
-- **Project Test Commands (current):**
-  - Build: REAL — `python -m pip install -e ".[dev]"`
-  - Unit tests: REAL — `python -m pytest tests/ -q`
-  - Coverage: REAL — `python -m pytest tests/ --cov=taskboard --cov-report=term-missing`
-  - Regression / full suite: REAL — `python -m pytest tests/ -q`
-  - Lint / typecheck: REAL — `python -m ruff check src tests`
-- **Scan evidence (bootstrap time):** no product manifests → commands were NONE; V13 NO-GO  
-- **Scan evidence (post-seed):** `pyproject.toml`, `src/taskboard/`, `tests/`
-- **Files created/updated:**
-  - `AGENTS.md`
-  - `.grok/README.md`
-  - `.grok/rules/accuracy-coverage.md`
-  - `.grok/personas/gf-*.toml` + `instructions/gf-*.md` (4 personas)
-  - `.grok/roles/gf-qa.toml`, `.grok/roles/gf-plan-reviewer.toml` (catalog only — not spawn binding)
-  - `.grok/skills/{plan-review-loop,targeted-unit-test-loop,regression-test-loop,post-change-accuracy-protocol,parallel-fullstack-feature}/SKILL.md`
-  - `.grok/workflows/post-change-testing-protocol.md`
-  - `.grok/docs/{test-accuracy-standards,coverage-policy,privacy-safety}.md`
-  - `docs/waivers/README.md`
-  - `fixtures/agentic-template-acceptance/{README,bad-plan,seeded-bug-notes}.md`
-  - Artifacts: `docs/plans/bootstrap-v8-inspect.json`, `acceptance-bad-plan.md`, `acceptance-bad-plan.review.md`, `bootstrap-v13-targeted-dry-run.md`, this handoff
-- **Waivers present:** none (NONE is correct; no TODO+waiver needed)
-- **Phase 2.9 content fidelity:** PASS
-- **Next steps:**
-  1. Optional: Fixture B (seeded bug) / Fixture C (coverage hole) on a throwaway branch.
-  2. Prefer bundled `/review`, `/check-work`, `/implement` for future features.
-  3. Continue agent work via plans under `docs/plans/` (example: tags feature already exercised).
-- **Reminders:**
-  - Prepend persona instruction files on every spawn; tags are UI-only
-  - Always set `capability_mode` on spawn (QA: execute/all; plan review: read-only)
-  - Roles are optional catalog metadata — not spawn binding
-  - Lead-only spawn (depth 1)
-  - COMPLETE does **not** imply accuracy_gates OPERATIONAL
-  - Prompt pressure is not a hard OS gate
+- **Date:** 2026-07-15  
+- **Template feature train:** 1.7  
+- **VERSION file:** patch-bumps on **every commit** (`prepare_commit_metrics.py` + pre-commit hook)  
+- **bootstrap_status:** COMPLETE (historical scaffold + post-seed product)  
+- **accuracy_gates:** OPERATIONAL  
+- **git_mode:** full  
 
-## Protocol map (V9)
+## Current Project Test Commands (v1.7)
 
-Post-change order:
+- **Build:** REAL — `python -m pip install -e ".[dev]"`
+- **Unit tests:** REAL — `python -m pytest tests/ -q`
+- **Coverage:** REAL — pytest `--cov=taskboard` + XML, then  
+  `python -m diff_cover.diff_cover_tool coverage.xml --compare-branch=origin/main --fail-under=80`  
+  (fallback: `main`; vacuous diff = UNMEASURED / no changed lines)
+- **Regression / full suite:** REAL — `python -m pytest tests/ -q`
+- **Lint:** REAL — `python -m ruff check src tests`
 
-1. Targeted unit test loop (`/targeted-unit-test-loop`)
-2. Code review: `/review` unless implement/review de-dupe says skip
-3. Regression (`/regression-test-loop`)
-4. `/check-work` → VERDICT: PASS (session adequacy only)
-5. Lead merge decision + `docs/waivers/`
+## Metrics (every commit)
 
-**De-dupe rule:** After clean `/implement` (zero open bugs, tree unchanged / tree match): skip `/review` and record reason. Else run `/review`. Gate-mapped gaps (missing tests / correctness / security / data loss) block skip.
+- **Version file:** `VERSION` (e.g. `1.7.0` → `1.7.1` on each commit metrics run)
+- **Token ledger:** `docs/metrics/token-ledger.md`
+- **Helpers:** `scripts/prepare_commit_metrics.py` (required every commit), `scripts/install_git_hooks.py`, optional mid-session `record_token_usage.py`
+- **Never invent** token counts; use `--unmeasured` when host stats unavailable
 
----
+## Harness surfaces (v1.7)
 
-## Post-bootstrap: TaskBoard test application + agent exercise
+- `.grok/rules/accuracy-coverage.md`, `.grok/rules/spawn.md` (auto-loaded)
+- Personas + instructions: `gf-backend`, `gf-frontend`, `gf-qa`, `gf-plan-reviewer`
+- Roles (catalog only, all four): `gf-backend`, `gf-frontend`, `gf-qa`, `gf-plan-reviewer`
+- Skills: plan-review-loop (**default** plan critique), targeted/regression loops, post-change protocol, parallel-fullstack, install-agentic-team
+- Docs: plan-quality, test-accuracy, coverage-policy (incl. vacuous-diff), ui-design, privacy-safety
+- Sample UI for Fixture E: `fixtures/agentic-template-acceptance/sample-ui/`
+- CI: `.github/workflows/ci.yml`
 
-To prove the scaffold is useful beyond ceremony, a **TaskBoard** sample product was added and agents were run against it.
+## Plan critique
 
-| Item | Detail |
-|------|--------|
-| Product | `src/taskboard/` — in-memory task board (Python 3.11+) |
-| Tooling | `pyproject.toml` with pytest, pytest-cov, ruff |
-| Feature plan | `docs/plans/taskboard-tags-feature.md` |
-| Agent implement | `[gf-backend]` spawned with prepended instructions → tags feature |
-| Agent QA | `[gf-qa]` targeted loop → **GO** (`docs/plans/taskboard-tags-qa-report.md`) |
-| Evidence | 32 tests passed; package coverage ~97%; ruff clean |
-| Impl summary | `docs/plans/taskboard-tags-impl-summary.md` |
+- **Default:** `/plan-review-loop`  
+- **Optional:** `/cold-review` only if present in `grok inspect` (external plugin; not installed by this template)
 
-**accuracy_gates: OPERATIONAL** because Unit + Regression are REAL, Coverage is REAL, and a successful targeted+regression run completed (QA GO).
+## Historical notes (pre-1.7)
 
-### Fixture B/C readiness (V12)
+Earlier bootstrap passes (V8 inspect, Fixture A Major Concerns, V13 fail-closed when Unit was NONE, TaskBoard seed + tags exercise) remain under `docs/plans/` as artifacts. Coverage command and handoff version were updated for 1.7; do not use older “1.4 / coverage without diff-cover” snapshots as current truth.
 
-| Criterion | Status |
-|-----------|--------|
-| Unit + Regression REAL | yes |
-| Product source tree | yes (`src/taskboard/`) |
-| Coverage command REAL | yes |
-| Fixture B/C executed | not required for bootstrap; ready to run per `fixtures/agentic-template-acceptance/README.md` |
+## Reminders
+
+- Prepend persona instruction files on every spawn; tags are UI-only  
+- Always set `capability_mode` on spawn (see `.grok/rules/spawn.md`)  
+- Roles are optional catalog metadata — not spawn binding  
+- Lead-only spawn (depth 1)  
+- Implement de-dupe skips **`/review` only**, never targeted QA / security / regression / UI / check-work  
+- Record tokens/models in the ledger when known  
+
+## Next steps
+
+1. Optional: Fixture B / C / E on a throwaway branch  
+2. Prefer bundled `/review`, `/check-work`, `/implement` for product work  
+3. Keep `VERSION` and ledger header aligned on template bumps  

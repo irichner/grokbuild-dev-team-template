@@ -22,7 +22,7 @@ from datetime import datetime, timezone
 from pathlib import Path
 from typing import Iterable
 
-TEMPLATE_VERSION = "1.6"
+TEMPLATE_VERSION = "1.7"
 
 EXPECTED_SKILLS = (
     "plan-review-loop",
@@ -42,6 +42,13 @@ EXPECTED_DOCS = (
     "ui-design-standards.md",
 )
 
+EXPECTED_ROLES = (
+    "gf-qa.toml",
+    "gf-plan-reviewer.toml",
+    "gf-backend.toml",
+    "gf-frontend.toml",
+)
+
 # Relative paths under source that are always installable (walked as trees or files).
 INSTALL_TREES = (
     ".grok",
@@ -49,6 +56,19 @@ INSTALL_TREES = (
 )
 INSTALL_FILES = (
     "docs/waivers/README.md",
+    "docs/metrics/README.md",
+    # Commit metrics (VERSION + token ledger on every commit)
+    "scripts/prepare_commit_metrics.py",
+    "scripts/record_token_usage.py",
+    "scripts/install_git_hooks.py",
+    "scripts/githooks/pre-commit",
+)
+
+# Seeded only when missing — never overwrite project usage history.
+LEDGER_SEED = "docs/metrics/token-ledger.md"
+COMPARE_BRANCH_NOTE = (
+    "compare-branch ladder: origin/main -> main -> master; "
+    "vacuous 'no lines in this diff' = UNMEASURED / no changed lines -- not 100%"
 )
 
 COMPANION_RULE_FILES = (
@@ -229,7 +249,7 @@ def install_file(
 
 
 def ensure_dirs(target: Path, dry_run: bool, report: InstallReport) -> None:
-    for rel in ("docs/plans", "docs/waivers"):
+    for rel in ("docs/plans", "docs/waivers", "docs/metrics"):
         d = target / rel
         if d.is_dir():
             report.add("skip_identical", rel + "/", "directory exists")
@@ -237,6 +257,113 @@ def ensure_dirs(target: Path, dry_run: bool, report: InstallReport) -> None:
         report.add("mkdir", rel + "/")
         if not dry_run:
             d.mkdir(parents=True, exist_ok=True)
+
+
+def _project_name_from_pyproject(text: str) -> str | None:
+    m = re.search(r'(?m)^name\s*=\s*["\']([^"\']+)["\']', text)
+    if m:
+        return m.group(1).strip()
+    return None
+
+
+def _coverage_package_name(root_pyproject: str, backend_pyproject: str) -> str | None:
+    for text in (root_pyproject, backend_pyproject):
+        if not text:
+            continue
+        m = re.search(
+            r"\[tool\.coverage\.run\][\s\S]*?source\s*=\s*\[([^\]]+)\]",
+            text,
+        )
+        if m:
+            inner = m.group(1)
+            names = re.findall(r'["\']([^"\']+)["\']', inner)
+            if names:
+                return names[0]
+        name = _project_name_from_pyproject(text)
+        if name:
+            return name
+    return None
+
+
+def _has_diff_cover(combined: str, target: Path) -> bool:
+    if "diff-cover" in combined or "diff_cover" in combined:
+        return True
+    # common lock / req filenames
+    for rel in (
+        "requirements.txt",
+        "requirements-dev.txt",
+        "pyproject.toml",
+        "backend/pyproject.toml",
+    ):
+        p = target / rel
+        if p.is_file():
+            try:
+                t = p.read_text(encoding="utf-8")
+            except OSError:
+                continue
+            if "diff-cover" in t or "diff_cover" in t:
+                return True
+    return False
+
+
+def _normalize_pytest_cov_cmd(cmd: str, package: str | None) -> str:
+    cmd = cmd.strip().strip("`").split("#")[0].strip()
+    if "--cov-report=xml" not in cmd and "pytest" in cmd:
+        if "--cov-report=term-missing" not in cmd and "--cov-report" not in cmd:
+            cmd = cmd + " --cov-report=term-missing --cov-report=xml"
+        elif "--cov-report=xml" not in cmd:
+            cmd = cmd + " --cov-report=xml"
+    if package and "--cov=" not in cmd and "--cov " not in cmd and "pytest" in cmd:
+        cmd = re.sub(r"\bpytest\b", f"pytest --cov={package}", cmd, count=1)
+    return cmd
+
+
+def _format_coverage_value(pytest_cov_cmd: str, *, include_diff_cover: bool) -> str:
+    base = f"`{pytest_cov_cmd}`"
+    if not include_diff_cover:
+        return (
+            f"{base} (prefer changed-line % via diff-cover when available; "
+            f"whole-package % is weakest proxy — note which rung was used; {COMPARE_BRANCH_NOTE})"
+        )
+    diff_cmd = (
+        "python -m diff_cover.diff_cover_tool coverage.xml "
+        "--compare-branch=origin/main --fail-under=80"
+    )
+    return (
+        f"{base} then `{diff_cmd}` "
+        f"(changed-line gate via diff-cover; {COMPARE_BRANCH_NOTE}; "
+        "whole-package fail_under in coverage config remains a backstop when configured)"
+    )
+
+
+def install_ledger_seed(
+    source: Path,
+    target: Path,
+    *,
+    dry_run: bool,
+    report: InstallReport,
+) -> None:
+    """Seed token ledger only when missing (never clobber usage history)."""
+    src = source / LEDGER_SEED
+    dest = target / LEDGER_SEED
+    if not src.is_file():
+        report.warnings.append(f"Ledger seed missing in source: {LEDGER_SEED}")
+        return
+    if dest.is_file():
+        report.add("skip_identical", LEDGER_SEED, "existing ledger preserved")
+        return
+    report.add("create", LEDGER_SEED, "seed empty ledger")
+    if not dry_run:
+        dest.parent.mkdir(parents=True, exist_ok=True)
+        # Rewrite version header to current template version
+        body = src.read_text(encoding="utf-8")
+        body = re.sub(
+            r"\*\*Template version:\*\*\s*\S+",
+            f"**Template version:** {TEMPLATE_VERSION}",
+            body,
+            count=1,
+        )
+        dest.write_text(body, encoding="utf-8", newline="\n")
 
 
 def find_companion_rules(target: Path) -> list[str]:
@@ -386,32 +513,48 @@ def scan_project_commands(target: Path) -> ScanResult:
         or "[tool.coverage" in root_pyproject
         or "[tool.coverage" in backend_pyproject
     )
+    package = _coverage_package_name(root_pyproject, backend_pyproject)
+    want_diff_cover = _has_diff_cover(combined, target) or (
+        has_cov and package is not None and (target / "pyproject.toml").is_file()
+    )
+    # Prefer emitting diff-cover whenever we can reconstruct a pytest-cov command and
+    # the target is a Python package with coverage signals; still require package name.
     if has_cov:
         m = re.search(r"(python -m pytest[^\n]*--cov[^\n]*)", combined)
         if m:
-            cov_cmd = m.group(1).strip().strip("`")
+            cov_cmd = _normalize_pytest_cov_cmd(m.group(1), package)
             cov_ev.append("scan")
-        elif unit_cmd and "pytest" in unit_cmd:
-            # Best-effort: append cov flags if package name guessable
-            cov_cmd = unit_cmd
-            if "--cov" not in cov_cmd:
-                # leave as-is with note — better NONE than wrong package
-                if "taskboard" in root_pyproject:
-                    cov_cmd = (
-                        'python -m pytest tests/ --cov=taskboard --cov-report=term-missing'
-                    )
-                    cov_ev.append("pyproject.toml (taskboard)")
-                else:
-                    cov_cmd = None
-        if cov_cmd:
-            result.rows.append(
-                CommandRow(
-                    "Coverage",
-                    f"`{cov_cmd}` (prefer diff-cover changed-line %, then changed-file proxy; whole-package % is weakest proxy — note which rung was used)",
-                    "REAL",
-                    cov_ev,
+        elif unit_cmd and "pytest" in unit_cmd and package:
+            base = unit_cmd.strip().strip("`")
+            if "--cov" not in base:
+                cov_cmd = (
+                    f"python -m pytest tests/ --cov={package} "
+                    "--cov-report=term-missing --cov-report=xml"
                 )
+            else:
+                cov_cmd = _normalize_pytest_cov_cmd(base, package)
+            cov_ev.append(f"pyproject package={package}")
+        elif package and (target / "tests").is_dir():
+            cov_cmd = (
+                f"python -m pytest tests/ --cov={package} "
+                "--cov-report=term-missing --cov-report=xml"
             )
+            cov_ev.append(f"tests/ + package={package}")
+        if cov_cmd:
+            # Include diff-cover step when dep present or we are generating a full recipe
+            include_dc = want_diff_cover or "diff-cover" in combined or "diff_cover" in combined
+            # Always attach diff-cover when package+xml recipe is known — agents need the ladder.
+            # If diff-cover is not in deps, note install requirement in the value.
+            if include_dc or package:
+                value = _format_coverage_value(cov_cmd, include_diff_cover=True)
+                if not _has_diff_cover(combined, target):
+                    value += " [requires dev dep: diff-cover]"
+                    cov_ev.append("diff-cover suggested")
+                else:
+                    cov_ev.append("diff-cover")
+            else:
+                value = _format_coverage_value(cov_cmd, include_diff_cover=False)
+            result.rows.append(CommandRow("Coverage", value, "REAL", cov_ev))
         else:
             result.rows.append(
                 CommandRow(
@@ -451,7 +594,7 @@ def scan_project_commands(target: Path) -> ScanResult:
             CommandRow("Regression / full suite", "NONE — no tool in repo", "NONE", [])
         )
 
-    # --- Lint / typecheck ---
+    # --- Lint (may include frontend typecheck script when present) ---
     lint_parts: list[str] = []
     lint_ev: list[str] = []
 
@@ -485,21 +628,18 @@ def scan_project_commands(target: Path) -> ScanResult:
 
     if isinstance(frontend_pkg, dict) and isinstance(frontend_pkg.get("scripts"), dict):
         fs = frontend_pkg["scripts"]
-        if "typecheck" in fs:
-            lint_parts.append("`cd frontend && npm run typecheck`")
-            lint_ev.append("frontend/package.json")
-        elif "lint" in fs:
+        if "lint" in fs:
             lint_parts.append("`cd frontend && npm run lint`")
             lint_ev.append("frontend/package.json")
+        if "typecheck" in fs:
+            # Optional extra check listed under Lint when the project defines it
+            lint_parts.append("`cd frontend && npm run typecheck` (optional typecheck script)")
+            lint_ev.append("frontend/package.json typecheck")
 
     if lint_parts:
-        result.rows.append(
-            CommandRow("Lint / typecheck", " · ".join(lint_parts), "REAL", lint_ev)
-        )
+        result.rows.append(CommandRow("Lint", " · ".join(lint_parts), "REAL", lint_ev))
     else:
-        result.rows.append(
-            CommandRow("Lint / typecheck", "NONE — no tool in repo", "NONE", [])
-        )
+        result.rows.append(CommandRow("Lint", "NONE — no tool in repo", "NONE", []))
 
     return result
 
@@ -514,7 +654,7 @@ def format_project_test_commands(scan: ScanResult, *, no_scan: bool) -> str:
             "- **Unit tests:** `TODO — user must fill`",
             "- **Coverage:** `TODO — user must fill`",
             "- **Regression / full suite:** `TODO — user must fill`",
-            "- **Lint / typecheck:** `TODO — user must fill`",
+            "- **Lint:** `TODO — user must fill`",
             END_PTC,
         ]
         return "\n".join(lines)
@@ -697,15 +837,23 @@ def write_handoff(
             "",
             "1. Confirm Project Test Commands in root `AGENTS.md` (fill TODOs or write durable waivers).",
             "2. If Coverage is NONE: add tooling or `docs/waivers/` before merge claims coverage gate.",
-            "3. Optional: `grok inspect --json` and confirm project skills.",
-            "4. Optional: Fixture A — copy `fixtures/agentic-template-acceptance/bad-plan.md` → `docs/plans/acceptance-bad-plan.md` and run `/plan-review-loop` or `/cold-review`.",
-            "5. Prefer bundled `/review`, `/check-work`, `/implement` for product work.",
+            "3. Confirm `docs/metrics/token-ledger.md` + `VERSION` exist; **every commit** must run "
+            "`python scripts/prepare_commit_metrics.py --model … --input N --output M` "
+            "(or `--unmeasured`). Install hooks: `python scripts/install_git_hooks.py`.",
+            "4. Optional: `grok inspect --json` and confirm project skills + spawn rule.",
+            "5. Optional: Fixture A — copy `fixtures/agentic-template-acceptance/bad-plan.md` → "
+            "`docs/plans/acceptance-bad-plan.md` and run `/plan-review-loop` "
+            "(optional `/cold-review` only if listed in grok inspect).",
+            "6. Prefer bundled `/review`, `/check-work`, `/implement` for product work.",
             "",
             "## Reminders",
             "",
             "- Prepend persona instruction files on every spawn; tags are UI-only.",
             "- Always set `capability_mode` on spawn (QA: execute/all).",
-            "- Lead-only spawn (depth 1).",
+            "- Lead-only spawn (depth 1); see `.grok/rules/spawn.md`.",
+            "- Roles/persona defaults are catalog only — not spawn binding.",
+            f"- Template feature train: {TEMPLATE_VERSION}; product `VERSION` patch-bumps every commit",
+            "- Never invent token counts; use --unmeasured when stats unavailable",
             "",
         ]
     )
@@ -728,8 +876,11 @@ def verify_install(target: Path, report: InstallReport) -> bool:
             ok = False
     for rel in (
         ".grok/rules/accuracy-coverage.md",
+        ".grok/rules/spawn.md",
         ".grok/personas/gf-qa.toml",
         "docs/waivers/README.md",
+        "docs/metrics/README.md",
+        "docs/metrics/token-ledger.md",
         "AGENTS.md",
     ):
         if not (target / rel).is_file():
@@ -740,6 +891,12 @@ def verify_install(target: Path, report: InstallReport) -> bool:
         p = target / ".grok" / "docs" / doc
         if not p.is_file():
             report.errors.append(f"Missing required doc: .grok/docs/{doc}")
+            ok = False
+
+    for role in EXPECTED_ROLES:
+        p = target / ".grok" / "roles" / role
+        if not p.is_file():
+            report.errors.append(f"Missing role catalog file: {role}")
             ok = False
 
     for persona in (
@@ -823,7 +980,7 @@ def install(
                     "Unit tests",
                     "Coverage",
                     "Regression / full suite",
-                    "Lint / typecheck",
+                    "Lint",
                 )
             ]
         )
@@ -844,6 +1001,45 @@ def install(
                 report=report,
                 target_root=target,
             )
+        install_ledger_seed(source, target, dry_run=dry_run, report=report)
+        # VERSION seed if missing (do not overwrite product VERSION)
+        src_ver = source / "VERSION"
+        dest_ver = target / "VERSION"
+        if src_ver.is_file() and not dest_ver.exists():
+            report.add("create", "VERSION", "seed from template")
+            if not dry_run:
+                # Start product at 0.1.0 so first commit becomes 0.1.1
+                dest_ver.write_text("0.1.0\n", encoding="utf-8", newline="\n")
+        if report.git_mode == "full" and not dry_run:
+            try:
+                hook_src = target / "scripts" / "githooks" / "pre-commit"
+                hook_dest = target / ".git" / "hooks" / "pre-commit"
+                if hook_src.is_file():
+                    if hook_dest.is_file() and hook_dest.read_bytes() == hook_src.read_bytes():
+                        report.add("skip_identical", ".git/hooks/pre-commit", "metrics hook")
+                    else:
+                        hooks_script = target / "scripts" / "install_git_hooks.py"
+                        if hooks_script.is_file():
+                            hr = subprocess.run(
+                                [sys.executable, str(hooks_script), "--root", str(target)],
+                                capture_output=True,
+                                text=True,
+                                timeout=60,
+                                check=False,
+                            )
+                            if hr.returncode == 0:
+                                report.add(
+                                    "update" if hook_dest.exists() else "create",
+                                    ".git/hooks/pre-commit",
+                                    "metrics hook installed",
+                                )
+                            else:
+                                report.warnings.append(
+                                    "git hooks install failed: "
+                                    f"{(hr.stderr or hr.stdout or '')[:200]}"
+                                )
+            except (OSError, subprocess.TimeoutExpired) as exc:
+                report.warnings.append(f"git hooks install skipped: {exc}")
 
     if not skip_agents:
         write_agents(
