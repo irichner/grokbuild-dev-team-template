@@ -1,0 +1,152 @@
+﻿[
+    {
+        "Project":  "AffordableQualityWater",
+        "Exit":  0,
+        "Note":  "ok"
+    },
+    {
+        "Project":  "agora",
+        "Exit":  0,
+        "Note":  "ok"
+    },
+    {
+        "Project":  "agoratest",
+        "Exit":  0,
+        "Note":  "ok"
+    },
+    {
+        "Project":  "bethaklein",
+        "Exit":  0,
+        "Note":  "ok"
+    },
+    {
+        "Project":  "botbits.ai",
+        "Exit":  0,
+        "Note":  "ok"
+    },
+    {
+        "Project":  "claude-code-feature-template",
+        "Exit":  0,
+        "Note":  "ok"
+    },
+    {
+        "Project":  "claude-code-ultimate-template",
+        "Exit":  0,
+        "Note":  "ok"
+    },
+    {
+        "Project":  "ExecutiveDashboards",
+        "Exit":  0,
+        "Note":  "ok"
+    },
+    {
+        "Project":  "Grok Build Studio",
+        "Exit":  0,
+        "Note":  "ok"
+    },
+    {
+        "Project":  "Grokbit.ai",
+        "Exit":  0,
+        "Note":  "ok"
+    },
+    {
+        "Project":  "grokbitwebsite",
+        "Exit":  0,
+        "Note":  "ok"
+    },
+    {
+        "Project":  "grokbuild-dev-team-template",
+        "Exit":  "skip",
+        "Note":  "source template"
+    },
+    {
+        "Project":  "Lanara",
+        "Exit":  0,
+        "Note":  "ok"
+    },
+    {
+        "Project":  "lanshore-claude-workflow",
+        "Exit":  0,
+        "Note":  "ok"
+    },
+    {
+        "Project":  "lanshore-web",
+        "Exit":  0,
+        "Note":  "ok"
+    },
+    {
+        "Project":  "LanshoreCRM",
+        "Exit":  0,
+        "Note":  "ok"
+    },
+    {
+        "Project":  "LanshoreEnvironment",
+        "Exit":  0,
+        "Note":  "ok"
+    },
+    {
+        "Project":  "LanshoreICMEngine",
+        "Exit":  0,
+        "Note":  "ok"
+    },
+    {
+        "Project":  "LanshoreIntelligence",
+        "Exit":  0,
+        "Note":  "ok"
+    },
+    {
+        "Project":  "LanshoreSite",
+        "Exit":  0,
+        "Note":  "ok"
+    },
+    {
+        "Project":  "makindo",
+        "Exit":  0,
+        "Note":  "ok"
+    },
+    {
+        "Project":  "OptimusRobotTasks",
+        "Exit":  0,
+        "Note":  "ok"
+    },
+    {
+        "Project":  "Performio",
+        "Exit":  0,
+        "Note":  "ok"
+    },
+    {
+        "Project":  "plugin-test",
+        "Exit":  0,
+        "Note":  "ok"
+    },
+    {
+        "Project":  "RunPod",
+        "Exit":  0,
+        "Note":  "ok"
+    },
+    {
+        "Project":  "SPMModelTraining",
+        "Exit":  0,
+        "Note":  "ok"
+    },
+    {
+        "Project":  "SPM_ICM",
+        "Exit":  0,
+        "Note":  "ok"
+    },
+    {
+        "Project":  "Swarm-hub",
+        "Exit":  0,
+        "Note":  "ok"
+    },
+    {
+        "Project":  "zohotohubspot",
+        "Exit":  0,
+        "Note":  "ok"
+    },
+    {
+        "Project":  "zohotohubspotDataCleanup",
+        "Exit":  0,
+        "Note":  "ok"
+    }
+]
