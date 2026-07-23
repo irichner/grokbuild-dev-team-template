@@ -1,0 +1,4 @@
+description = "GrokForge debugger. Root-cause protocol: reproduce, isolate, fix + regression test."
+instructions_file = ".grok/personas/instructions/gf-debugger.md"
+reasoning_effort = "high"
+default_capability_mode = "all"

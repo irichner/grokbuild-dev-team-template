@@ -2,7 +2,7 @@
 
 **Mandatory read** for `gf-frontend` before writing or changing UI code, and for anyone
 judging the UI design gate (plan-quality hard gate 8) or the UI verification step in
-`/post-change-accuracy-protocol` (`read_file` this document first).
+`/implement` accuracy protocol UI verification (`read_file` this document first).
 
 Applies to any user-facing surface: views, components, styling, templates, and CLI/TUI
 output when it is the product.
@@ -50,6 +50,6 @@ For each interactive or data-driven element in the diff, account for:
 ## Relation to gates
 
 - Plan review: hard gate 8 in `.grok/docs/plan-quality-standards.md` (conditional on UI scope; N/A counts as pass when no UI is touched).
-- Post-change: UI verification step in `/post-change-accuracy-protocol` when UI changed.
+- Post-change: UI verification step in `/implement` accuracy protocol when UI changed.
 - Severity: design blocker → **gap** → blocks merge (`.grok/rules/accuracy-coverage.md`).
 - Harness check: Fixture E in `fixtures/agentic-template-acceptance/`.

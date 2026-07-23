@@ -33,8 +33,8 @@ A **GrokForge** agentic team config:
 |---------|------|------|
 | Lead rules | `AGENTS.md` | Pipeline, gates, Project Test Commands |
 | Auto-loaded rules | `.grok/rules/` | Spawn checklist, accuracy/coverage |
-| Skills | `.grok/skills/*/SKILL.md` | Plan review, targeted/regression loops, post-change protocol, install |
-| Personas | `.grok/personas/instructions/` | `gf-backend`, `gf-frontend`, `gf-qa`, `gf-plan-reviewer` |
+| Skills | `.grok/skills/*/SKILL.md` | **`/plan`** + **`/implement`** (agent owners), install; deprecated stubs redirect |
+| Personas | `.grok/personas/instructions/` | Owned by `/plan` or `/implement` — see spawn table below |
 | Standards | `.grok/docs/` | Plan quality, test accuracy, coverage, UI design |
 | Fixtures | `fixtures/agentic-template-acceptance/` | Acceptance A–E |
 | Metrics | `scripts/prepare_commit_metrics.py` + ledger | Every-commit VERSION + tokens |
@@ -48,7 +48,7 @@ A **GrokForge** agentic team config:
 - **Grok / Grok Build** (or host that loads `AGENTS.md` + `.grok/`)
 - **Git** for full protocol (worktrees, `/review` local mode)
 - **Python 3.11+** for the installer and (in this template repo) TaskBoard tests
-- Host skills when available: `/implement`, `/review`, `/check-work` (bundled; not vendored). If missing, protocol records `HOST_SKILLS=PARTIAL` and must not silent-skip — see post-change skill.
+- Project skills: **`/plan`** and **`/implement`** (template-authoritative agent owners). Host skills used *inside* `/implement`: `/review`, `/check-work` (assumed); optional `security-auditor`, `/code-review`, `/cold-review` (only if `grok inspect` lists it). If host review/check-work missing → `HOST_SKILLS=PARTIAL` + non-silent fallback (`gf-reviewer`); see [Pure-Grok agent map](FEATURES.md#pure-grok-agent-map).
 
 ---
 
@@ -77,20 +77,18 @@ Optional skill: `/install-agentic-team` (same script).
 
 ## 4. Confirm it works
 
-1. Target has `.grok/skills/post-change-accuracy-protocol/SKILL.md` and root `AGENTS.md`.  
+1. Target has `.grok/skills/plan/SKILL.md`, `.grok/skills/implement/SKILL.md`, and root `AGENTS.md`.  
 2. Project Test Commands are REAL, NONE, or TODO+waiver (no silent forever TODO).  
-3. Optional Fixture A: copy `fixtures/agentic-template-acceptance/bad-plan.md` → `docs/plans/acceptance-bad-plan.md`, run `/plan-review-loop` → must **not** Approve.  
-4. If host has `grok inspect`, confirm project skills appear. Missing `/review` or `/check-work` → treat protocol as `HOST_SKILLS=PARTIAL`.
+3. Optional Fixture A: copy `fixtures/agentic-template-acceptance/bad-plan.md` → `docs/plans/acceptance-bad-plan.md`, run **`/plan`** → critique must **not** Approve.  
+4. If host has `grok inspect`, confirm project skills appear. Missing host `/review` or `/check-work` → treat `/implement` protocol as `HOST_SKILLS=PARTIAL`.
 
 ---
 
 ## 5. Your first task
 
-1. Plan (Plan Mode / durable `docs/plans/<name>.md`).  
-2. `/plan-review-loop` (max 2 passes).  
-3. `/implement` or spawn `gf-backend` / `gf-frontend` with **prepended** instruction files.  
-4. `/post-change-accuracy-protocol`.  
-5. Commit with `python scripts/prepare_commit_metrics.py --model … --input N --output M` (or `--unmeasured`).
+1. **`/plan`** — durable `docs/plans/<name>.md` + critique with `gf-plan-reviewer` (max 2 passes). Copy session Plan Mode `plan.md` into `docs/plans/` if needed.  
+2. **`/implement`** — only after Approve or durable waiver: code change + accuracy protocol (targeted → review → regression → UI → check-work).  
+3. Commit with `python scripts/prepare_commit_metrics.py --model … --input N --output M` (or `--unmeasured`).
 
 ---
 
@@ -100,55 +98,66 @@ Optional skill: `/install-agentic-team` (same script).
 
 | Skill | When |
 |-------|------|
-| `/plan-review-loop` | Before implement; hard gates 1–8 |
-| `/targeted-unit-test-loop` | After code change; accuracy + coverage + lint |
-| `/regression-test-loop` | Before merge |
-| `/post-change-accuracy-protocol` | Full done bar after non-trivial code change |
-| `/parallel-fullstack-feature` | Contract-first parallel BE/FE |
+| **`/plan`** | Explore, durable plan, plan critique (hard gates 1–8) |
+| **`/implement`** | Code change + full accuracy protocol (all implement-phase agents) |
 | `/install-agentic-team` | Install into another repo |
 
-### Host / bundled (expected)
+**Deprecated aliases** (redirect stubs only): `/plan-review-loop`, `/targeted-unit-test-loop`, `/regression-test-loop`, `/post-change-accuracy-protocol`, `/parallel-fullstack-feature` → open `/plan` or `/implement` instead.
 
-| Skill | When |
-|-------|------|
-| `/implement` | Non-trivial coding |
-| `/review` | Diff review (de-dupe may skip only if bugs=0 **and** gaps=0) |
-| `/check-work` | Session adequacy VERDICT |
-| `security-auditor` | Auth/secrets/payments/untrusted input |
+### Host / bundled (used inside `/implement`; not vendored)
+
+| Skill | Status | When |
+|-------|--------|------|
+| `/review` | **Assumed** | Diff review (de-dupe may skip only if bugs=0 **and** gaps=0) |
+| `/check-work` | **Assumed** | Session adequacy VERDICT |
+| `security-auditor` | **Optional** (conditional) | Auth/secrets/payments/untrusted input |
+| `/code-review` | **Optional** | Stricter maintainability if host lists it |
+| `/cold-review` | **Optional** | Only if `grok inspect` lists it (not shipped); from `/plan` |
+
+Missing assumed host skills → `HOST_SKILLS=PARTIAL`: thin local review or spawn **`gf-reviewer`**; degraded check-work with recorded note. Never silent-skip. Full map: `docs/FEATURES.md` (Pure-Grok agent map).
 
 Lead may **re-enact** project `SKILL.md` files when slash UI is unavailable.
+
+**Claude `.claude/agents/`** are **not** installed by `install_agentic_team.py`. When Grok is Lead they are optional helpers only and must not override `AGENTS.md`.
 
 ---
 
 ## 7. Accuracy pipeline
 
 ```
-Plan → plan-review-loop (max 2)
-  → implement
-  → post-change-accuracy-protocol (max 3 cycles)
-       1. targeted unit loop (max 3; WAITING_ON_PRODUCT pauses budget)
-       2. /review or de-dupe + conditional security
-       3. regression loop
-       4. UI verification (if UI) + UI Verification Report
-       5. /check-work
+/plan (explore + durable MD + critique, max 2)
+  → /implement
+       Phase 1: feature | bugfix | parallel-fullstack
+       Phase 2 accuracy (max 3 cycles):
+         1. targeted unit (gf-qa; max 3; WAITING_ON_PRODUCT pauses budget)
+         2. /review or gf-reviewer or de-dupe + conditional security
+         3. regression (gf-qa)
+         4. UI verification (if UI)
+         5. /check-work
   → merge only if gates pass or durable waiver
   → prepare_commit_metrics every commit
 ```
 
 Gates: tests, coverage ≥80% (or waiver / honest UNMEASURED), test accuracy, review, lint, UI when applicable. Details: `AGENTS.md` and `.grok/rules/accuracy-coverage.md`.
 
+**Escape hatches:** docs/typo trivial path; separate **spike/prototype mode** only with explicit user approval + time box + durable note (`docs/plans/` or `docs/waivers/spike-<name>.md`). Spike work is not production merge-ready until normal gates re-enter. See `AGENTS.md`.
+
 ---
 
 ## 8. Personas and spawn
 
-| Persona | Use |
-|---------|-----|
-| `gf-backend` | Backend implementation |
-| `gf-frontend` | Frontend (+ UI design standards) |
-| `gf-qa` | Tests, coverage, accuracy |
-| `gf-plan-reviewer` | Plan critique |
+| Persona | Owned by | Use | Typical `capability_mode` |
+|---------|----------|-----|---------------------------|
+| `gf-plan-reviewer` | `/plan` | Plan critique | `read-only` |
+| `gf-backend` | `/implement` | Backend implementation | `all` |
+| `gf-frontend` | `/implement` | Frontend (+ UI design standards) | `all` |
+| `gf-qa` | `/implement` | Tests, coverage, accuracy | `execute` / `all` |
+| `gf-reviewer` | `/implement` | Thin local code review (`HOST_SKILLS=PARTIAL`) | `read-only` |
+| `gf-debugger` | `/implement` | Root-cause debug + regression test | `all` |
 
-**Always:** Lead-only spawn; prepend full `.grok/personas/instructions/<name>.md`; set `capability_mode` explicitly; tags like `[gf-qa]` are **UI labels only**. See `.grok/rules/spawn.md`.
+**Always:** Lead-only spawn **while re-enacting `/plan` or `/implement`**; prepend full `.grok/personas/instructions/<name>.md`; set `capability_mode` explicitly; tags like `[gf-qa]` are **UI labels only**. See `.grok/rules/spawn.md`.
+
+Do **not** redefine bundled names `reviewer`, `implementer`, `test-writer`, `security-auditor` — use the `gf-*` project names above.
 
 ---
 
@@ -178,7 +187,7 @@ See `fixtures/agentic-template-acceptance/README.md` (A bad plan, B seeded bug, 
 |---------|--------|
 | Gates always NO-GO | Project Test Commands still TODO without waiver |
 | Spawn ignores persona rules | Instruction file not prepended (tags alone do nothing) |
-| Protocol incomplete | `HOST_SKILLS=PARTIAL` — run thin review / degraded check-work; do not silent-skip |
+| Protocol incomplete | `HOST_SKILLS=PARTIAL` — thin local review or spawn `gf-reviewer` / degraded check-work; do not silent-skip |
 | Hook overwrote existing pre-commit | Restored from `pre-commit.bak.*`; re-install with backup-aware script |
 | Wrong stack docs | Prefer this guide + `AGENTS.md` over Claude-only sections |
 
@@ -189,7 +198,7 @@ See `fixtures/agentic-template-acceptance/README.md` (A bad plan, B seeded bug, 
 | Goal | Action |
 |------|--------|
 | Install | `python scripts/install_agentic_team.py <target> --write-handoff --verify` |
-| Critique plan | `/plan-review-loop` |
-| After code change | `/post-change-accuracy-protocol` |
+| Plan + critique | `/plan` |
+| Implement + accuracy | `/implement` |
 | Commit metrics | `prepare_commit_metrics.py` |
 | Lead policy | `AGENTS.md` |

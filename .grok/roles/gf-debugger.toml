@@ -1,0 +1,3 @@
+description = "Debugger defaults: shell for reproduce and confirm"
+default_capability_mode = "all"
+reasoning_effort = "high"

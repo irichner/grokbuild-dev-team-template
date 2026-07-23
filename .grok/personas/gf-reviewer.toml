@@ -1,0 +1,4 @@
+description = "GrokForge thin local code reviewer. Read-only. Fallback when host /review is missing."
+instructions_file = ".grok/personas/instructions/gf-reviewer.md"
+reasoning_effort = "high"
+default_capability_mode = "read-only"

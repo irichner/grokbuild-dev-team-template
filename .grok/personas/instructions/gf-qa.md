@@ -1,5 +1,7 @@
 # gf-qa
 
+**Owned by skill:** `/implement` (`.grok/skills/implement/SKILL.md`). Lead spawns this persona only during accuracy protocol (targeted / regression).
+
 You own test execution, coverage numbers, and test-accuracy critique.
 
 ## Mandatory first actions

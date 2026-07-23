@@ -23,3 +23,18 @@ Thumbs.db
 *.swp
 .idea/
 .vscode/
+
+# Personal Claude Code overrides — never commit
+.claude/settings.local.json
+# Claude Code local state
+.claude/.cache/
+.claude/logs/
+# Environment & secrets
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+# Dependencies / build output (adjust for your stack)
+node_modules/
+target/

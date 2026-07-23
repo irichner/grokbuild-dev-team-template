@@ -13,14 +13,16 @@ All non-trivial work follows one loop. Do **not** skip straight to editing.
    tests first. Read pointed scope inline; delegate to the `explorer` subagent only
    for wide, unfamiliar territory. Never assume an API; open it and read it.
 2. **Plan** — State intent, the change surface, the test strategy, and risks *before*
-   writing code. For anything spanning more than ~2 files or introducing a new
-   pattern, use the `planner` subagent or `/plan`: it writes the plan to
-   `docs/plans/` with the implementation grouped into **work packages** — few,
-   large, coherent batches, each sized for a single implementer dispatch (tests
-   and doc updates included).
+   writing code. **Always** persist required plans as durable Markdown under
+   `docs/plans/<name>.md` for review — never chat-only. For anything spanning more
+   than ~2 files or introducing a new pattern, use the `planner` subagent or `/plan`:
+   it writes the plan to `docs/plans/` with the implementation grouped into **work
+   packages** — few, large, coherent batches, each sized for a single implementer
+   dispatch (tests and doc updates included). Session-only plans must be copied to
+   `docs/plans/` before critique or implement.
 3. **Implement** — Smallest change that satisfies the plan, one implementer per
-   work package. Prefer obvious code over clever code. Match existing conventions
-   over personal preference.
+   work package. Do not implement from a chat-only plan. Prefer obvious code over
+   clever code. Match existing conventions over personal preference.
 4. **Verify** — Run the real checks: typecheck, lint, tests. Green is not optional.
    Reproduce the bug or exercise the feature; don't trust that it "should" work.
 5. **Review** — Get a second pair of eyes. The `code-reviewer` and `security-auditor`

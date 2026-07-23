@@ -24,13 +24,17 @@ from typing import Iterable
 
 TEMPLATE_VERSION = "1.7"
 
+# Primary skills first; deprecated stubs remain for muscle memory + verify tree integrity.
 EXPECTED_SKILLS = (
+    "plan",
+    "implement",
+    "install-agentic-team",
+    # Deprecated redirect stubs (must still ship)
     "plan-review-loop",
     "targeted-unit-test-loop",
     "regression-test-loop",
     "post-change-accuracy-protocol",
     "parallel-fullstack-feature",
-    "install-agentic-team",
 )
 
 # Reference docs that must land with the harness (under .grok/docs/).
@@ -47,6 +51,27 @@ EXPECTED_ROLES = (
     "gf-plan-reviewer.toml",
     "gf-backend.toml",
     "gf-frontend.toml",
+    "gf-reviewer.toml",
+    "gf-debugger.toml",
+)
+
+# Persona catalog TOMLs (spawn still requires instruction prepend; verify catalog completeness).
+EXPECTED_PERSONAS = (
+    "gf-qa.toml",
+    "gf-plan-reviewer.toml",
+    "gf-backend.toml",
+    "gf-frontend.toml",
+    "gf-reviewer.toml",
+    "gf-debugger.toml",
+)
+
+EXPECTED_PERSONA_INSTRUCTIONS = (
+    "gf-qa.md",
+    "gf-plan-reviewer.md",
+    "gf-backend.md",
+    "gf-frontend.md",
+    "gf-reviewer.md",
+    "gf-debugger.md",
 )
 
 # Relative paths under source that are always installable (walked as trees or files).
@@ -842,16 +867,18 @@ def write_handoff(
             "(or `--unmeasured`). Install hooks: `python scripts/install_git_hooks.py`.",
             "4. Optional: `grok inspect --json` and confirm project skills + spawn rule.",
             "5. Optional: Fixture A — copy `fixtures/agentic-template-acceptance/bad-plan.md` → "
-            "`docs/plans/acceptance-bad-plan.md` and run `/plan-review-loop` "
+            "`docs/plans/acceptance-bad-plan.md` and run project `/plan` "
             "(optional `/cold-review` only if listed in grok inspect).",
-            "6. Prefer bundled `/review`, `/check-work`, `/implement` for product work.",
+            "6. Day-to-day product work: project **`/plan`** then **`/implement`** "
+            "(all `gf-*` agents are owned by those two skills). Host `/review` and "
+            "`/check-work` are used inside `/implement` when present.",
             "",
             "## Reminders",
             "",
+            "- Spawn `gf-*` only while re-enacting `/plan` or `/implement` (see `.grok/rules/spawn.md`).",
             "- Prepend persona instruction files on every spawn; tags are UI-only.",
             "- Always set `capability_mode` on spawn (QA: execute/all).",
-            "- Lead-only spawn (depth 1); see `.grok/rules/spawn.md`.",
-            "- Roles/persona defaults are catalog only — not spawn binding.",
+            "- Lead-only spawn (depth 1); roles/persona defaults are catalog only — not spawn binding.",
             f"- Template feature train: {TEMPLATE_VERSION}; product `VERSION` patch-bumps every commit",
             "- Never invent token counts; use --unmeasured when stats unavailable",
             "",
@@ -877,7 +904,6 @@ def verify_install(target: Path, report: InstallReport) -> bool:
     for rel in (
         ".grok/rules/accuracy-coverage.md",
         ".grok/rules/spawn.md",
-        ".grok/personas/gf-qa.toml",
         "docs/waivers/README.md",
         "docs/metrics/README.md",
         "docs/metrics/token-ledger.md",
@@ -899,12 +925,13 @@ def verify_install(target: Path, report: InstallReport) -> bool:
             report.errors.append(f"Missing role catalog file: {role}")
             ok = False
 
-    for persona in (
-        "gf-qa.md",
-        "gf-plan-reviewer.md",
-        "gf-backend.md",
-        "gf-frontend.md",
-    ):
+    for persona_toml in EXPECTED_PERSONAS:
+        p = target / ".grok" / "personas" / persona_toml
+        if not p.is_file():
+            report.errors.append(f"Missing persona catalog file: {persona_toml}")
+            ok = False
+
+    for persona in EXPECTED_PERSONA_INSTRUCTIONS:
         p = target / ".grok" / "personas" / "instructions" / persona
         if not p.is_file():
             report.errors.append(f"Missing persona instructions: {persona}")
@@ -912,7 +939,8 @@ def verify_install(target: Path, report: InstallReport) -> bool:
 
     # Optional grok inspect + host skill probe note
     report.warnings.append(
-        "Host skills /review, /check-work, /implement are not vendored by this installer; "
+        "Host skills /review, /check-work, security-auditor are not vendored by this installer; "
+        "project /plan and /implement are template-authoritative; "
         "protocol must record HOST_SKILLS=OK|PARTIAL (never silent-skip)."
     )
     try:

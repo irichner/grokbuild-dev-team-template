@@ -13,26 +13,55 @@ Grok-native paths only. Optimized for **accuracy + coverage + UI design quality*
 | `.grok/roles/*.toml` | Catalog defaults only — **not spawn binding**; skills still set `capability_mode` + prepend |
 | `.grok/docs/*`, `.grok/workflows/*` | **No** — reference only (mandatory `read_file` for reviewers/QA/frontend) |
 
-## Prefer bundled skills
+## Two primary skills (agent owners)
 
-- `/implement` — implement → review → fix loop  
-- `/review` — diff review  
-- `/check-work` — session verification (includes build/test when relevant)  
-- `/code-review` — strict maintainability (optional)  
-- `/create-skill` — capture new skills  
-- `/plan`, `/view-plan` — Plan Mode  
+| Skill | Path | Owns agents |
+|-------|------|-------------|
+| **`/plan`** | `.grok/skills/plan/SKILL.md` | Lead (author) + `gf-plan-reviewer` |
+| **`/implement`** | `.grok/skills/implement/SKILL.md` | `gf-backend`, `gf-frontend`, `gf-qa`, `gf-reviewer`, `gf-debugger` |
+| `/install-agentic-team` | `.grok/skills/install-agentic-team/SKILL.md` | Meta-install only (not an SDLC agent owner) |
 
-Project skills: **`/plan-review-loop` (default plan critique)**, targeted/regression testing, post-change protocol, parallel fullstack, install-agentic-team.  
-**`/cold-review`** is optional and only if present in `grok inspect` (external plugin — not shipped by this template).
+**Spawn rule:** `gf-*` personas only while re-enacting `/plan` or `/implement` (see `.grok/rules/spawn.md`).
 
-## Accuracy loops (v1.7)
+### Deprecated skill aliases (stubs only)
 
-| Skill / phase | Loop | Cap |
-|---------------|------|-----|
-| `/plan-review-loop` (optional `/cold-review`) | revise → re-review | 2 passes |
-| `/targeted-unit-test-loop` | fix → re-test | 3 full suite runs |
-| `/regression-test-loop` | fix → re-test | 3 full phase runs |
-| `/post-change-accuracy-protocol` | full protocol retry | 3 cycles |
+`plan-review-loop`, `targeted-unit-test-loop`, `regression-test-loop`, `post-change-accuracy-protocol`, `parallel-fullstack-feature` — redirect to `/plan` or `/implement`. Do not treat stubs as full procedures.
+
+## Personas (project catalog)
+
+| Persona | Owned by | Role | Typical capability |
+|---------|----------|------|--------------------|
+| `gf-plan-reviewer` | `/plan` | Plan hard-gate critique | `read-only` |
+| `gf-backend` | `/implement` | Backend implementer | `all` |
+| `gf-frontend` | `/implement` | Frontend implementer + UI design bar | `all` |
+| `gf-qa` | `/implement` | Tests, coverage, accuracy | `execute` / `all` |
+| `gf-reviewer` | `/implement` | Thin local code review (host `/review` fallback) | `read-only` |
+| `gf-debugger` | `/implement` | Root-cause debug + regression test | `all` |
+
+Spawn requires **prepend** of instruction files + explicit `capability_mode`. Tags are UI-only. Do not shadow bundled names `reviewer` / `implementer` / `test-writer` / `security-auditor`.
+
+## Host skills (probe; not vendored)
+
+Project `/plan` and `/implement` are **template-authoritative** for GrokForge work. Host may also expose skills with similar names; for this template, re-enact **project** `.grok/skills/plan` and `.grok/skills/implement`.
+
+| Host skill | Status | Role under `/implement` |
+|------------|--------|-------------------------|
+| `/review` | Assumed for review step | Prefer over `gf-reviewer` when present |
+| `/check-work` | Assumed for final verify | Session VERDICT |
+| `security-auditor` | Optional conditional | Auth/secrets/payments/untrusted input |
+| `/code-review` | Optional | Stricter maintainability |
+| `/cold-review` | Optional | Only if `grok inspect` lists it; plan-phase adversarial |
+
+Missing `/review` or `/check-work` → `HOST_SKILLS=PARTIAL` + non-silent fallback (never silent-skip).
+
+## Accuracy loops
+
+| Phase | Skill | Cap |
+|-------|-------|-----|
+| Plan critique | `/plan` Phase C | 2 passes |
+| Targeted unit | `/implement` accuracy | 3 full suite runs |
+| Regression | `/implement` accuracy | 3 full phase runs |
+| Full accuracy protocol | `/implement` Phase 2 | 3 cycles |
 
 ## Metrics (every commit)
 

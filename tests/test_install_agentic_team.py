@@ -65,6 +65,8 @@ def test_install_empty_git_repo_creates_tree(inst, tmp_path: Path) -> None:
     _git_init(target)
     report = inst.install(REPO_ROOT, target, write_handoff_flag=True, verify=True)
     assert not report.errors
+    assert (target / ".grok" / "skills" / "plan" / "SKILL.md").is_file()
+    assert (target / ".grok" / "skills" / "implement" / "SKILL.md").is_file()
     assert (target / ".grok" / "skills" / "plan-review-loop" / "SKILL.md").is_file()
     assert (target / ".grok" / "rules" / "accuracy-coverage.md").is_file()
     assert (target / "docs" / "waivers" / "README.md").is_file()
@@ -256,7 +258,14 @@ def test_install_seeds_metrics_and_preserves_ledger(inst, tmp_path: Path) -> Non
     report2 = inst.install(REPO_ROOT, target, force=True)
     assert not report2.errors
     assert "keep me" in ledger.read_text(encoding="utf-8")
-    for role in ("gf-backend.toml", "gf-frontend.toml", "gf-qa.toml", "gf-plan-reviewer.toml"):
+    for role in (
+        "gf-backend.toml",
+        "gf-frontend.toml",
+        "gf-qa.toml",
+        "gf-plan-reviewer.toml",
+        "gf-reviewer.toml",
+        "gf-debugger.toml",
+    ):
         assert (target / ".grok" / "roles" / role).is_file()
     assert (target / "fixtures" / "agentic-template-acceptance" / "sample-ui" / "index.html").is_file()
     assert (target / "scripts" / "prepare_commit_metrics.py").is_file()
@@ -274,20 +283,36 @@ def test_install_includes_plan_quality_and_loop_assets(inst, tmp_path: Path) -> 
     assert (target / ".grok" / "docs" / "plan-quality-standards.md").is_file()
     assert (target / ".grok" / "docs" / "test-accuracy-standards.md").is_file()
     assert (target / ".grok" / "docs" / "ui-design-standards.md").is_file()
-    for name in ("gf-qa.md", "gf-plan-reviewer.md", "gf-backend.md", "gf-frontend.md"):
+    for name in (
+        "gf-qa.md",
+        "gf-plan-reviewer.md",
+        "gf-backend.md",
+        "gf-frontend.md",
+        "gf-reviewer.md",
+        "gf-debugger.md",
+    ):
         assert (target / ".grok" / "personas" / "instructions" / name).is_file()
-    plan_skill = (
+    plan_skill = (target / ".grok" / "skills" / "plan" / "SKILL.md").read_text(
+        encoding="utf-8"
+    )
+    assert "Hard gates" in plan_skill or "hard gates" in plan_skill.lower()
+    assert "max 2" in plan_skill.lower() or "pass <= 2" in plan_skill
+    assert "gf-plan-reviewer" in plan_skill
+    implement_skill = (
+        target / ".grok" / "skills" / "implement" / "SKILL.md"
+    ).read_text(encoding="utf-8")
+    assert "MAX = 3" in implement_skill or "max 3" in implement_skill.lower()
+    assert "gf-qa" in implement_skill
+    assert "gf-backend" in implement_skill
+    # Deprecated stubs redirect only (no dual source of truth)
+    plan_stub = (
         target / ".grok" / "skills" / "plan-review-loop" / "SKILL.md"
     ).read_text(encoding="utf-8")
-    assert "Hard gates" in plan_skill or "hard gates" in plan_skill.lower()
-    assert "Max review passes" in plan_skill or "max 2" in plan_skill.lower()
-    targeted = (
-        target / ".grok" / "skills" / "targeted-unit-test-loop" / "SKILL.md"
-    ).read_text(encoding="utf-8")
-    assert "MAX = 3" in targeted or "max 3" in targeted.lower()
+    assert "Deprecated" in plan_stub or "DEPRECATED" in plan_stub
     agents = (target / "AGENTS.md").read_text(encoding="utf-8")
     assert "Loop policy" in agents
     assert "plan-quality-standards.md" in agents
+    assert "/plan" in agents and "/implement" in agents
 
 
 def test_verify_fails_when_plan_quality_doc_missing(inst, tmp_path: Path) -> None:
@@ -320,10 +345,14 @@ def test_install_includes_ui_design_assets(inst, tmp_path: Path) -> None:
         target / ".grok" / "personas" / "instructions" / "gf-frontend.md"
     ).read_text(encoding="utf-8")
     assert "ui-design-standards.md" in frontend
-    protocol = (
+    implement_skill = (
+        target / ".grok" / "skills" / "implement" / "SKILL.md"
+    ).read_text(encoding="utf-8")
+    assert "UI verification" in implement_skill
+    protocol_stub = (
         target / ".grok" / "skills" / "post-change-accuracy-protocol" / "SKILL.md"
     ).read_text(encoding="utf-8")
-    assert "UI verification" in protocol
+    assert "Deprecated" in protocol_stub or "DEPRECATED" in protocol_stub
     plan_std = (
         target / ".grok" / "docs" / "plan-quality-standards.md"
     ).read_text(encoding="utf-8")

@@ -4,6 +4,18 @@ Mandatory reference for plan authors and `gf-plan-reviewer` / **`/plan-review-lo
 Optional `/cold-review` only when present in `grok inspect` (external plugin — not required).
 Plans that fail hard gates must receive **Request Changes** or **Major Concerns** — not Approve.
 
+## Durable plan artifact (always)
+
+When planning is required, the plan **must** live as a Markdown file under **`docs/plans/<short-name>.md`** so it can be reviewed, revised, and audited across sessions.
+
+| Rule | Detail |
+|------|--------|
+| **Canonical path** | `docs/plans/<short-name>.md` |
+| **Session plan** | Plan Mode may write `~/.grok/sessions/<encoded-cwd>/<session-id>/plan.md` (Windows: `%USERPROFILE%\.grok\sessions\...`). **Copy/sync to `docs/plans/`** before critique or implement — session-only is not enough. |
+| **Chat-only** | **Forbidden** as the sole plan. Do not run `/plan-review-loop` Approve path or `/implement` against chat prose alone. |
+| **Review artifacts** | Lead persists reviews to `docs/plans/<stem>.review.md` (pass 2 → `.review-2.md`). |
+| **Trivial work** | Docs/comment-only or pure typo may skip planning (see `AGENTS.md` escape hatch). |
+
 ## Hard gates (must all pass for Approve)
 
 | # | Section | Required content |
@@ -33,7 +45,9 @@ Plans that fail hard gates must receive **Request Changes** or **Major Concerns*
 ## Loop alignment
 
 - Max **2** plan-review passes (`/plan-review-loop` default; optional `/cold-review` with the same cap when available).
+- Critique always targets a **repo path** under `docs/plans/` (not chat).
 - Between passes: plan must be revised (not re-reviewed unchanged).
 - After pass 2, residual **hard-gate failures** (any Overall other than Approve — **Request Changes** or **Major Concerns**) → do **not** implement unless durable waiver under `docs/waivers/`.
 - Prefer **Major Concerns** when labeling unsafe/unbounded residual risk for waivers.
 - Do **not** start `/implement` or specialist coding until Approve **or** user accepts residual hard-gate failures with durable waiver.
+- Do **not** implement from a chat-only or session-only plan.

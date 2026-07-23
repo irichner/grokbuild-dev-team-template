@@ -4,6 +4,8 @@
 
 Bootstrap config for a Grok-native agentic software team (accuracy, tests, coverage, plan-quality loops, UI design gates), plus a **TaskBoard** sample app used to exercise the team.
 
+**When Grok is Lead:** follow root [`AGENTS.md`](AGENTS.md) and [`.grok/`](.grok/) only. Claude [`.claude/agents/`](.claude/agents/) (if present in this monorepo) are **optional helpers only** — they are **not** installed by `scripts/install_agentic_team.py` and must **not** override Grok Lead policy. Pure-Grok agent map: [`docs/FEATURES.md`](docs/FEATURES.md#pure-grok-agent-map).
+
 **Metrics (every commit):** [`docs/metrics/token-ledger.md`](docs/metrics/token-ledger.md) + `VERSION` via  
 `python scripts/prepare_commit_metrics.py --model … --input N --output M`  
 (or `--unmeasured`). Install hook: `python scripts/install_git_hooks.py`. Never invent counts.
@@ -31,7 +33,7 @@ python scripts/install_agentic_team.py C:\path\to\project --force   # overwrite 
 
 **Installs:** `.grok/`, `docs/waivers/README.md`, `docs/metrics/` (README + seed ledger if missing), acceptance fixtures, generated `AGENTS.md` (scanned build/test commands).
 
-**Does not install:** TaskBoard `src/` / template `tests/` / `pyproject.toml`, or this repo’s plan history. **Never overwrites** an existing token ledger.
+**Does not install:** TaskBoard `src/` / template `tests/` / `pyproject.toml`, this repo’s plan history, or Claude `.claude/agents/`. **Never overwrites** an existing token ledger.
 
 **Existing product rules:** If the target has `CLAUDE.md` (or similar), it is left unchanged and referenced from `AGENTS.md`. Existing `AGENTS.md` is backed up before rewrite.
 
@@ -83,12 +85,11 @@ python -m ruff check src tests scripts
 
 See `docs/plans/taskboard-tags-feature.md` — add **tags** to tasks with normalization, filtering, and tests.
 
-Suggested agent pipeline:
+Suggested agent pipeline (all `gf-*` agents owned by these two skills):
 
-1. `/plan-review-loop` on the tags plan (hard gates; max 2 revise passes). Optional `/cold-review` only if present in `grok inspect`.  
-2. `/implement` (or spawn `gf-backend` with prepended instructions; green targeted tests before Ready)  
-3. `/post-change-accuracy-protocol` (targeted → review → regression → check-work; max 3 cycles)  
-4. Before commit: `prepare_commit_metrics.py` with measured tokens (or `--unmeasured`)  
+1. **`/plan`** on the tags plan (durable MD + hard gates; max 2 critique passes). Optional `/cold-review` only if present in `grok inspect`.  
+2. **`/implement`** — code change (`gf-backend` / etc.) + accuracy protocol (targeted → review → regression → check-work; max 3 cycles)  
+3. Before commit: `prepare_commit_metrics.py` with measured tokens (or `--unmeasured`)  
 
 ### Sample UI (Fixture E)
 
@@ -96,7 +97,7 @@ Suggested agent pipeline:
 
 ## Version history (short)
 
-- **v1.7** — Coverage alignment, installer diff-cover, vacuous-diff policy, spawn checklist, full roles, plan-review default, parallel-fullstack CLI path, Lint gate, CI, sample UI, **per-commit VERSION + token ledger** (`prepare_commit_metrics` + git hook).  
+- **v1.7** — Coverage alignment, installer diff-cover, vacuous-diff policy, spawn checklist, full roles, **`/plan` + `/implement` as sole agent owners** (old skills deprecated stubs), Lint gate, CI, sample UI, **per-commit VERSION + token ledger** (`prepare_commit_metrics` + git hook).  
 - **v1.6** — UI design pillar, gate 8, UI verification, Fixture E notes, lint gate, diff-cover ladder, QA independence, conditional security.  
 - **v1.5** — Plan hard gates, fix→re-test loops, implementer done criteria.
 
